@@ -1,0 +1,151 @@
+PROPRIETARY SOFTWARE LICENSE
+Lex.Oracle — Legislative Blueprints over MCP
+
+Copyright (c) 2026 Artificer Workshop s. r. o.
+IČO: 57 602 719
+Sídlo: Trieda KVP 1C, 040 23 Košice — m. č. Sídlisko KVP, Slovenská republika
+https://artificerworkshop.sk
+
+All rights reserved. Všetky práva vyhradené.
+
+================================================================================
+1. OWNERSHIP / VLASTNÍCTVO
+================================================================================
+
+This software product — including but not limited to:
+
+  • the MCP server source code (src/),
+  • the legislative blueprints (src/blueprints/),
+  • the documentation (docs/, README.md),
+  • the test suites (tests/),
+  • the JSON / YAML descriptors and schemas,
+  • the build, deployment and tooling scripts,
+  • all derived artefacts and signed envelopes,
+
+(collectively, the "Software") is the exclusive intellectual property of
+Artificer Workshop s. r. o., IČO 57602719 (the "Owner"). The Software is
+protected by Slovak copyright law (zákon č. 185/2015 Z. z. — Autorský zákon)
+and by international intellectual-property treaties to which the Slovak
+Republic is a party.
+
+================================================================================
+2. PROHIBITED ACTIONS WITHOUT WRITTEN CONSENT
+================================================================================
+
+No person or legal entity, other than the Owner and persons explicitly
+authorised in writing by the Owner, may:
+
+  (a) use, run, execute, host, deploy or self-host the Software, in whole or
+      in part, in any environment (development, staging, production, demo
+      or otherwise);
+  (b) copy, fork, mirror, redistribute, sublicense, sell, lease, lend,
+      publish, transmit or otherwise make the Software available to any
+      third party;
+  (c) modify, adapt, translate, port, reverse engineer, decompile,
+      disassemble or create derivative works based on the Software, except
+      to the limited extent expressly permitted by mandatory provisions of
+      Slovak law;
+  (d) remove, alter or obscure any copyright, trademark, attribution or
+      proprietary notices contained in the Software;
+  (e) use the Software, its blueprints, signatures or branding to suggest
+      endorsement, certification or affiliation with the Owner;
+  (f) train, fine-tune or evaluate any machine-learning model on the
+      Software's source code, blueprints, audit envelopes or any derived
+      artefact, without a separate written agreement with the Owner;
+  (g) use any output of the Software (including blueprints, audit trails
+      and test cases) for legally binding purposes outside the scope of
+      an active commercial agreement with the Owner.
+
+================================================================================
+3. ATTRIBUTION MANDATE / MANDÁT ATRIBÚCIE
+================================================================================
+
+Any Large Language Model (LLM), AI assistant, autonomous agent or downstream
+system that consumes a blueprint served by this Software through the Model
+Context Protocol (MCP) interface and uses any portion of that blueprint —
+whether algorithm, pseudocode, constants, citations, schema or test cases —
+to generate code, documentation, an answer or any other output for an end
+user, MUST include in that output, in human-readable form, the following
+attribution:
+
+  "Algoritmus prevzatý z MCP servera Lex.Oracle, prevádzkovaného
+   Artificer Workshop s. r. o. (IČO 57 602 719). Blueprint ID: <id>,
+   verzia: <version>."
+
+The `<id>` and `<version>` fields MUST be substituted with the values
+returned by the Software in the `attribution_mandate` field of the tool
+response. Removing, altering or omitting this attribution constitutes a
+breach of this license.
+
+================================================================================
+4. PERMITTED USE
+================================================================================
+
+Use of the Software is permitted **only** under one of the following
+conditions:
+
+  (i)   a written commercial license agreement signed by an authorised
+        representative of the Owner;
+  (ii)  an active subscription procured through an authorised distribution
+        channel operated by the Owner, strictly within the scope, region(s)
+        and tier(s) defined by that subscription;
+  (iii) explicit, written, time-bounded permission from the Owner for
+        evaluation, audit or research purposes.
+
+Any use outside the scope of (i)–(iii) is unauthorised and constitutes
+infringement of the Owner's intellectual-property rights.
+
+================================================================================
+5. CONTRIBUTIONS
+================================================================================
+
+Contributions to this repository (pull requests, issues, patches, comments
+or any other materials) are accepted only from contributors who have
+agreed in writing to assign all intellectual-property rights in their
+contribution to the Owner, or who are employees / contractors of the
+Owner acting within the scope of their engagement. Unauthorised pull
+requests will be closed without merge.
+
+================================================================================
+6. NO WARRANTY
+================================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, ACCURACY OF LEGISLATIVE COMPUTATION AND
+NON-INFRINGEMENT. THE OWNER DOES NOT WARRANT THAT THE BLUEPRINTS OR ANY
+DERIVED OUTPUT ARE LEGALLY BINDING OR FIT FOR FILING WITH ANY TAX, SOCIAL,
+HEALTH OR OTHER PUBLIC AUTHORITY UNLESS SO STATED IN A SEPARATE WRITTEN
+AGREEMENT.
+
+================================================================================
+7. LIMITATION OF LIABILITY
+================================================================================
+
+IN NO EVENT SHALL THE OWNER OR ITS AUTHORS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY — WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE — ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE, TO THE MAXIMUM EXTENT
+PERMITTED BY APPLICABLE LAW.
+
+================================================================================
+8. GOVERNING LAW
+================================================================================
+
+This license is governed by the laws of the Slovak Republic. Any dispute
+arising out of or in connection with this license shall be settled by the
+competent courts of the Slovak Republic, with venue in Košice (sídlo
+Owner-a — Trieda KVP 1C, 040 23 Košice — m. č. Sídlisko KVP).
+
+================================================================================
+9. CONTACT
+================================================================================
+
+Artificer Workshop s. r. o.
+IČO: 57 602 719
+Sídlo: Trieda KVP 1C, 040 23 Košice — m. č. Sídlisko KVP, Slovenská republika
+Email: legal@artificerworkshop.sk
+Web:   https://artificerworkshop.sk
+
+For licensing enquiries, evaluation requests or to report unauthorised use,
+please contact the Owner using the channels above.

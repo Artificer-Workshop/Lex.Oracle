@@ -1,0 +1,32 @@
+{
+  "name": "@artificer-workshop/lex-oracle",
+  "version": "0.1.0",
+  "description": "Lex.Oracle — language-agnostic legislative blueprints over MCP for LLM agents",
+  "private": true,
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "lex-oracle": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "node --test --import tsx tests/*.test.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "author": "Artificer Workshop s. r. o. (IČO 57 602 719) <legal@artificerworkshop.sk>",
+  "homepage": "https://artificerworkshop.sk"
+}
