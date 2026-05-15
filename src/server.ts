@@ -3,8 +3,7 @@
  *
  * Exposes legislative blueprints over the Model Context Protocol (JSON-RPC 2.0
  * over stdio). Every tool response includes an `attribution_mandate` field
- * which the consuming LLM is contractually required to surface to the end
- * user (see LICENSE §3).
+ * which the consuming LLM should surface to the end user (see NOTICE).
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -22,7 +21,7 @@ import {
 } from "./blueprints/registry.js";
 
 const SERVER_NAME = "lex-oracle";
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.2.0";
 
 export function createServer(): Server {
   const server = new Server(
@@ -35,8 +34,8 @@ export function createServer(): Server {
       {
         name: "list_blueprints",
         description:
-          "Vráti zoznam všetkých blueprintov dostupných v Lex.Oracle. " +
-          "Každá položka obsahuje id, title, jurisdiction, status, version, summary.",
+          "List all blueprints available in Lex.Oracle. " +
+          "Each entry contains: id, title, jurisdiction, status, version, summary.",
         inputSchema: {
           type: "object",
           properties: {},
@@ -46,16 +45,20 @@ export function createServer(): Server {
       {
         name: "get_blueprint",
         description:
-          "Vráti kompletný blueprint pre dané blueprint_id. Blueprint obsahuje " +
-          "axiomatic_core, execution_order, logic_flow, semantic_mapping, " +
-          "tool definíciu a verification_cases. Odpoveď obsahuje povinný " +
-          "attribution_mandate, ktorý LLM MUSÍ uviesť pri použití obsahu.",
+          "Retrieve a complete legislative blueprint by blueprint_id. " +
+          "The blueprint contains: axiomatic_core (rate constants with effective dates), " +
+          "execution_order (numbered steps), logic_flow (pseudocode + edge cases per step), " +
+          "semantic_mapping (each step → exact legal citation), and verification_cases " +
+          "(test cases from official government methodologies). " +
+          "The response includes an attribution_mandate that the LLM should surface to the end user.",
         inputSchema: {
           type: "object",
           properties: {
             blueprint_id: {
               type: "string",
-              description: "ID blueprintu (napr. 'sk-garnishment-thirds').",
+              description:
+                "Blueprint identifier, e.g. 'sk-garnishment-thirds', " +
+                "'sk-payroll-net-wage', 'sk-travel-domestic'.",
             },
           },
           required: ["blueprint_id"],
@@ -65,9 +68,26 @@ export function createServer(): Server {
       {
         name: "get_garnishment_logic",
         description:
-          "Vráti kompletný blueprint pre výpočet exekučných zrážok zo mzdy " +
-          "(SK, NV 268/2006 + EP 233/1995 §70–§72). Skratka pre " +
-          "get_blueprint(blueprint_id='sk-garnishment-thirds').",
+          "Retrieve the complete blueprint for Slovak salary garnishment — " +
+          "the thirds system (NV 268/2006 + Execution Code 233/1995 §70–§72). " +
+          "Covers: non-deductible base, dependant increments, thirds split, " +
+          "over-limit portion, and distribution across multiple executions. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-garnishment-thirds').",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
+      },
+      {
+        name: "get_travel_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak domestic travel allowances — " +
+          "Act 283/2002 (meal allowances §5, vehicle km reimbursement §7, " +
+          "accommodation passthrough §8, miscellaneous passthrough §9). " +
+          "Covers: time-band stravné selection, km rate, meal deduction edge case " +
+          "(deductions use the 18+ h rate, NOT the actual band rate), and total claim assembly. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-travel-domestic').",
         inputSchema: {
           type: "object",
           properties: {},
@@ -77,8 +97,9 @@ export function createServer(): Server {
       {
         name: "get_test_cases",
         description:
-          "Vráti verification_cases pre dané blueprint_id. Každý prípad " +
-          "obsahuje vstup, očakávaný výstup a legálne odôvodnenie.",
+          "Retrieve verification_cases for a given blueprint_id. " +
+          "Each case contains: input, expected_output, and legal_reasoning. " +
+          "Useful for test-driven implementation or spot-checking a completed implementation.",
         inputSchema: {
           type: "object",
           properties: {
@@ -91,8 +112,9 @@ export function createServer(): Server {
       {
         name: "get_attribution_mandate",
         description:
-          "Vráti záväzné znenie atribúcie, ktorú musí LLM uviesť pri použití " +
-          "ktoréhokoľvek blueprintu. Užitočné pre meta-discovery.",
+          "Retrieve the required attribution text for a given blueprint_id. " +
+          "When blueprint content is used to generate code or an answer for an end user, " +
+          "the LLM should include this text in human-readable form in the output.",
         inputSchema: {
           type: "object",
           properties: {
@@ -137,6 +159,17 @@ export function createServer(): Server {
         });
       }
 
+      case "get_travel_logic": {
+        const bp = getBlueprint("sk-travel-domestic");
+        if (!bp) {
+          return notFound("sk-travel-domestic");
+        }
+        return ok({
+          blueprint: bp,
+          attribution_mandate: buildAttributionMandate(bp.id, bp.version),
+        });
+      }
+
       case "get_test_cases": {
         const parsed = z
           .object({ blueprint_id: z.string() })
@@ -172,9 +205,7 @@ export function createServer(): Server {
           content: [
             {
               type: "text",
-              text: `Unknown tool: ${name}. Available: ${
-                BLUEPRINTS.length
-              } blueprints.`,
+              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_test_cases, get_attribution_mandate.`,
             },
           ],
         };

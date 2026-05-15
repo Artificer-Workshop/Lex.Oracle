@@ -1,10 +1,9 @@
 {
   "name": "@artificer-workshop/lex-oracle",
-  "version": "0.1.0",
-  "description": "Lex.Oracle — language-agnostic legislative blueprints over MCP for LLM agents",
-  "private": true,
+  "version": "0.2.0",
+  "description": "MCP server providing deterministic, citable legislative blueprints for Slovak & Czech labour law — payroll, garnishment, travel allowances. Eliminates LLM hallucinations in regulated computations.",
   "type": "module",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
   },
@@ -18,6 +17,27 @@
     "test": "node --test --import tsx tests/*.test.ts",
     "lint": "tsc --noEmit"
   },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "legal-tech",
+    "compliance",
+    "payroll",
+    "salary-garnishment",
+    "travel-allowances",
+    "slovakia",
+    "slovak-law",
+    "legislative-automation",
+    "llm-tools",
+    "fintech",
+    "hr-tech",
+    "deterministic-algorithms",
+    "Act-461-2003",
+    "Act-580-2004",
+    "Act-595-2003",
+    "Act-283-2002",
+    "NV-268-2006"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "zod": "^3.23.8"
@@ -28,5 +48,12 @@
     "typescript": "^5.7.2"
   },
   "author": "Artificer Workshop s. r. o. (IČO 57 602 719) <legal@artificerworkshop.sk>",
-  "homepage": "https://artificerworkshop.sk"
+  "homepage": "https://github.com/Artificer-Workshop/Lex.Oracle#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Artificer-Workshop/Lex.Oracle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Artificer-Workshop/Lex.Oracle/issues"
+  }
 }

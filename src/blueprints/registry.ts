@@ -12,10 +12,12 @@
 import type { Blueprint } from "./types.js";
 import skGarnishmentThirds from "./sk-garnishment-thirds.js";
 import skPayrollNetWage from "./sk-payroll-net-wage.js";
+import skTravelDomestic from "./sk-travel-domestic.js";
 
 export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skGarnishmentThirds,
   skPayrollNetWage,
+  skTravelDomestic,
 ];
 
 const BY_ID = new Map<string, Blueprint>(
