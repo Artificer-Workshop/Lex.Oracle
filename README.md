@@ -43,6 +43,11 @@ Each blueprint contains:
 | `sk-travel-domestic` | 🇸🇰 SK | Domestic travel allowances (meal + vehicle + accommodation) | 283/2002 §5, §7, §8, §9 | **READY** |
 | `sk-annual-tax-reconciliation` | 🇸🇰 SK | Annual tax reconciliation (ročné zúčtovanie §38) — NČZD, DDS/PEPP, 4-band §15, child bonus §33 | 595/2003 §11/§15/§33/§35/§38 | **READY** |
 | `sk-szco-annual-settlement` | 🇸🇰 SK | SZČO annual insurance settlement — SP 33.15 %, ZP 16 % (2026–2027 §38ezk), VZ /1.486, min/max clamping | 461/2003 §138, 580/2004 §13a/§19 | **READY** |
+| `sk-b2b-dph` | 🇸🇰 SK | VAT (DPH) — sadzby 23/19/5/0 % od 2025, daň §19, odpočet §49, koeficient §50, reverse-charge §69, EU §43 | 222/2004 §19/§27/§43/§49/§50/§69 | **READY** |
+| `sk-b2b-dppo` | 🇸🇰 SK | Corporate income tax — 3 sadzby (mikro 10 % / štandard 21 % / veľká 24 % od 2025), umorenie straty §30, preddavky §42 | 595/2003 §15/§17/§30/§42 | **READY** |
+| `sk-b2b-odpisy` | 🇸🇰 SK | Tax depreciation — 7 odpisových skupín, rovnomerné §27, zrýchlené §28 (sk. 2 a 3), nehmotný §22 ods. 8 (max 5 r.) | 595/2003 §22–§28 | **READY** |
+| `sk-b2b-rz-zp` | 🇸🇰 SK | Annual health-insurance settlement — VZ agregácia, sadzba SZČO 14/16/15 % (§38ezk), dividendy §10b 14 %, ZŤP koef. 0.5 | 580/2004 §12/§13/§19/§38ezk | **READY** |
+| `sk-b2b-zrazkova-dan` | 🇸🇰 SK | Withholding tax — 19 % štandard, 7 % dividendy FO, 35 % override nespolupracujúce štáty, splatnosť 15. deň | 595/2003 §43 | **READY** |
 
 ## Quick start
 
@@ -101,6 +106,11 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 | `get_travel_logic` | — | Shortcut: full blueprint for `sk-travel-domestic` |
 | `get_annual_tax_reconciliation_logic` | — | Shortcut: full blueprint for `sk-annual-tax-reconciliation` |
 | `get_szco_annual_settlement_logic` | — | Shortcut: full blueprint for `sk-szco-annual-settlement` |
+| `get_b2b_dph_logic` | — | Shortcut: full blueprint for `sk-b2b-dph` |
+| `get_b2b_dppo_logic` | — | Shortcut: full blueprint for `sk-b2b-dppo` |
+| `get_b2b_odpisy_logic` | — | Shortcut: full blueprint for `sk-b2b-odpisy` |
+| `get_b2b_rz_zp_logic` | — | Shortcut: full blueprint for `sk-b2b-rz-zp` |
+| `get_b2b_zrazkova_dan_logic` | — | Shortcut: full blueprint for `sk-b2b-zrazkova-dan` |
 | `get_test_cases` | `blueprint_id` | Verification cases only — useful for test-driven implementation |
 | `get_attribution_mandate` | `blueprint_id` | Required attribution text to include in LLM output |
 

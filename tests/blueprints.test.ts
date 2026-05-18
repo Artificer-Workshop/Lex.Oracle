@@ -6,8 +6,8 @@ import { buildAttributionMandate } from "../src/attribution.js";
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
-test("registry exposes 5 blueprints", () => {
-  assert.equal(BLUEPRINTS.length, 5);
+test("registry exposes 10 blueprints", () => {
+  assert.equal(BLUEPRINTS.length, 10);
 });
 
 test("every blueprint id is unique", () => {

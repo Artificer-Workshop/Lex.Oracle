@@ -1,7 +1,7 @@
 {
   "name": "@artificer-workshop/lex-oracle",
-  "version": "0.3.0",
-  "description": "MCP server providing deterministic, citable legislative blueprints for Slovak & Czech labour law — payroll, garnishment, travel allowances, annual tax reconciliation, SZČO annual insurance settlement. Eliminates LLM hallucinations in regulated computations.",
+  "version": "0.4.0",
+  "description": "MCP server providing deterministic, citable legislative blueprints for Slovak labour & B2B tax law — payroll, garnishment, travel, annual reconciliation, SZČO settlement, plus B2B: DPH, DPPO, daňové odpisy, RZ ZP, zrážková daň. Eliminates LLM hallucinations in regulated computations.",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {

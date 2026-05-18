@@ -15,6 +15,11 @@ import skPayrollNetWage from "./sk-payroll-net-wage.js";
 import skTravelDomestic from "./sk-travel-domestic.js";
 import skAnnualTaxReconciliation from "./sk-annual-tax-reconciliation.js";
 import skSzcoAnnualSettlement from "./sk-szco-annual-settlement.js";
+import skB2bDph from "./sk-b2b-dph.js";
+import skB2bDppo from "./sk-b2b-dppo.js";
+import skB2bOdpisy from "./sk-b2b-odpisy.js";
+import skB2bRzZp from "./sk-b2b-rz-zp.js";
+import skB2bZrazkovaDan from "./sk-b2b-zrazkova-dan.js";
 
 export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skGarnishmentThirds,
@@ -22,6 +27,11 @@ export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skTravelDomestic,
   skAnnualTaxReconciliation,
   skSzcoAnnualSettlement,
+  skB2bDph,
+  skB2bDppo,
+  skB2bOdpisy,
+  skB2bRzZp,
+  skB2bZrazkovaDan,
 ];
 
 const BY_ID = new Map<string, Blueprint>(

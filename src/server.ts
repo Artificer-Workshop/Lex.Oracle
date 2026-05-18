@@ -26,7 +26,7 @@ import {
 } from "./format.js";
 
 const SERVER_NAME = "lex-oracle";
-const SERVER_VERSION = "0.3.0";
+const SERVER_VERSION = "0.4.0";
 
 export function createServer(): Server {
   const server = new Server(
@@ -130,6 +130,55 @@ export function createServer(): Server {
         },
       },
       {
+        name: "get_b2b_dph_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak VAT (DPH) — Zákon 222/2004 Z. z. " +
+          "Covers: §27 sadzby (zákl. 23 %, stredná 19 %, znížená 5 %, nulová 0 % od 2025-01-01), " +
+          "daň na výstupe §19, odpočet §49 (plný/krátený), koeficient §50 (ceiling 2dp), " +
+          "reverse-charge §69, EU intra-community §43/§11. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-b2b-dph').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
+        name: "get_b2b_dppo_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak corporate income tax (DPPO) — " +
+          "Zákon 595/2003 Z. z. §15 v znení od 2025-01-01 (novela 278/2024). " +
+          "Covers: 3 sadzby (mikro 10 % ≤ 60 000 EUR / štandard 21 % / veľká 24 % > 5 mil. EUR), " +
+          "základ dane §17, umorenie straty §30 (max 50 % ZD, 5 rokov), preddavky §42. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-b2b-dppo').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
+        name: "get_b2b_odpisy_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak tax depreciation — " +
+          "Zákon 595/2003 Z. z. §22-§28. Covers: 7 odpisových skupín (2/4/6/8/12/20/40 rokov), " +
+          "rovnomerné §27 s pomerom v 1. roku ((13−mesiac)/12), zrýchlené §28 iba sk. 2 a 3 " +
+          "(koeficienty 6/7 a 8/9), nehmotný majetok §22 ods. 8 (max 5 rokov lineárne). " +
+          "Shortcut for get_blueprint(blueprint_id='sk-b2b-odpisy').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
+        name: "get_b2b_rz_zp_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak annual health-insurance settlement (RZ ZP) — " +
+          "Zákon 580/2004 Z. z. §19. Covers: agregácia VZ (zamestnanec, SZČO, dividendy, iné), " +
+          "temporal sadzba SZČO (14 % do 2025 / 16 % v 2026–2027 §38ezk prechodné / 15 % od 2028), " +
+          "dividendy §10b 14 % nemenné, ZŤP koef. 0.5, rozdiel preplatok/nedoplatok, hranica 1 EUR §19 ods. 6. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-b2b-rz-zp').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
+        name: "get_b2b_zrazkova_dan_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak withholding tax — Zákon 595/2003 Z. z. §43. " +
+          "Covers: štandard 19 % (úroky, licenčné, dividendy PO), dividendy FO 7 % od 2017, " +
+          "override 35 % pre nespolupracujúce štáty §43 ods. 2, splatnosť 15. deň nasl. mesiaca §43 ods. 11. " +
+          "Shortcut for get_blueprint(blueprint_id='sk-b2b-zrazkova-dan').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
         name: "get_test_cases",
         description:
           "Retrieve verification_cases for a given blueprint_id. " +
@@ -227,6 +276,36 @@ export function createServer(): Server {
         });
       }
 
+      case "get_b2b_dph_logic": {
+        const bp = getBlueprint("sk-b2b-dph");
+        if (!bp) return notFound("sk-b2b-dph");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
+      case "get_b2b_dppo_logic": {
+        const bp = getBlueprint("sk-b2b-dppo");
+        if (!bp) return notFound("sk-b2b-dppo");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
+      case "get_b2b_odpisy_logic": {
+        const bp = getBlueprint("sk-b2b-odpisy");
+        if (!bp) return notFound("sk-b2b-odpisy");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
+      case "get_b2b_rz_zp_logic": {
+        const bp = getBlueprint("sk-b2b-rz-zp");
+        if (!bp) return notFound("sk-b2b-rz-zp");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
+      case "get_b2b_zrazkova_dan_logic": {
+        const bp = getBlueprint("sk-b2b-zrazkova-dan");
+        if (!bp) return notFound("sk-b2b-zrazkova-dan");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
       case "get_test_cases": {
         const parsed = z
           .object({ blueprint_id: z.string() })
@@ -259,7 +338,7 @@ export function createServer(): Server {
           content: [
             {
               type: "text",
-              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_annual_tax_reconciliation_logic, get_szco_annual_settlement_logic, get_test_cases, get_attribution_mandate.`,
+              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_annual_tax_reconciliation_logic, get_szco_annual_settlement_logic, get_b2b_dph_logic, get_b2b_dppo_logic, get_b2b_odpisy_logic, get_b2b_rz_zp_logic, get_b2b_zrazkova_dan_logic, get_test_cases, get_attribution_mandate.`,
             },
           ],
         };

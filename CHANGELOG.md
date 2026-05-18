@@ -5,6 +5,22 @@ All notable changes to `@artificer-workshop/lex-oracle` will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-05-18
+
+### Added
+- **Slovenský B2B segment — 5 nových blueprintov** (status: READY):
+  - `sk-b2b-dph` — DPH podľa zákona 222/2004 Z. z. Sadzby §27 od 2025-01-01 (zákl. 23 %, stredná 19 %, znížená 5 %, nulová 0 %), daň na výstupe §19, odpočet §49 (plný/krátený), koeficient §50 (ceiling 2 dp), reverse-charge §69, EU intra-community §43/§11. 3 VC scenáre.
+  - `sk-b2b-dppo` — Daň z príjmov právnických osôb (§15 zákona 595/2003) v znení od 2025-01-01 (novela 278/2024). 3-pásmová sadzba: mikro 10 % (obrat ≤ 60 000 EUR), štandard 21 %, veľká 24 % (obrat > 5 mil. EUR). Umorenie straty §30 (50 % ZD, 5 rokov), preddavky §42.
+  - `sk-b2b-odpisy` — Daňové odpisy §22-§28. 7 odpisových skupín (2/4/6/8/12/20/40 rokov), rovnomerné §27 s pomerom v 1. roku ((13−mesiac)/12), zrýchlené §28 iba pre skupiny 2 a 3 (koeficienty 6/7 a 8/9), nehmotný majetok §22 ods. 8 (max 5 rokov lineárne).
+  - `sk-b2b-rz-zp` — Ročné zúčtovanie zdravotného poistenia §19 zákona 580/2004. Agregácia VZ, temporal sadzba SZČO (14 % do 2025, 16 % v 2026–2027 §38ezk prechodné, 15 % od 2028), dividendy §10b 14 % nemenné, ZŤP koef. 0.5, hranica nedoplatku 1 EUR §19 ods. 6.
+  - `sk-b2b-zrazkova-dan` — Zrážková daň §43 zákona 595/2003. Štandard 19 % (úroky, licenčné, dividendy PO), dividendy FO 7 % od 2017, override 35 % pre nespolupracujúce štáty (§43 ods. 2, zoznam MFSR), splatnosť 15. deň nasledujúceho mesiaca §43 ods. 11.
+- **5 nových shortcut MCP tools**: `get_b2b_dph_logic`, `get_b2b_dppo_logic`, `get_b2b_odpisy_logic`, `get_b2b_rz_zp_logic`, `get_b2b_zrazkova_dan_logic`.
+
+### Changed
+- `SERVER_VERSION` 0.3.0 → 0.4.0.
+- `package.json` description rozšírený o B2B segment.
+- README — coverage table 5 → 10 blueprintov, MCP tools 8 → 13.
+
 ## [0.3.0] — 2026-05-18
 
 ### Added
