@@ -19,9 +19,14 @@ import {
   getBlueprint,
   listBlueprints,
 } from "./blueprints/registry.js";
+import {
+  formatBlueprint,
+  formatBlueprintList,
+  formatVerificationCases,
+} from "./format.js";
 
 const SERVER_NAME = "lex-oracle";
-const SERVER_VERSION = "0.2.0";
+const SERVER_VERSION = "0.3.0";
 
 export function createServer(): Server {
   const server = new Server(
@@ -50,7 +55,7 @@ export function createServer(): Server {
           "execution_order (numbered steps), logic_flow (pseudocode + edge cases per step), " +
           "semantic_mapping (each step → exact legal citation), and verification_cases " +
           "(test cases from official government methodologies). " +
-          "The response includes an attribution_mandate that the LLM should surface to the end user.",
+          "The response includes a human-readable 'presentation' field and an attribution_mandate.",
         inputSchema: {
           type: "object",
           properties: {
@@ -95,6 +100,36 @@ export function createServer(): Server {
         },
       },
       {
+        name: "get_annual_tax_reconciliation_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak annual tax reconciliation — " +
+          "§38 Zákon 595/2003 Z.z. (ročné zúčtovanie preddavkov na daň zo závislej činnosti). " +
+          "Covers: 12-month aggregation, NČZD na daňovníka (§11 ods. 2), NČZD na manžela (§11 ods. 3), " +
+          "DDS/PEPP (§11 ods. 8, max 180 EUR), annual tax §15, child bonus §33, settlement vs advances (§38 ods. 6). " +
+          "Shortcut for get_blueprint(blueprint_id='sk-annual-tax-reconciliation').",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
+      },
+      {
+        name: "get_szco_annual_settlement_logic",
+        description:
+          "Retrieve the complete blueprint for Slovak SZČO annual insurance settlement — " +
+          "461/2003 Z.z. §138 ods. 2 (SP) + 580/2004 Z.z. §13 ods. 2 + §19 (ZP). " +
+          "Covers: VZ = (ZD + paid SP + paid ZP) / 1.486 / divisor, SP rates 33.15% " +
+          "(nemocenské 4.4% + starobné 18% + invalidné 6% + rezervný fond 4.75%), " +
+          "ZP rate temporal (14% to 2025 / 16% 2026–2027 §38ezk / 15% from 2028), " +
+          "min/max VZ clamping, partial-year handling (SP always /12, ZP /months). " +
+          "Shortcut for get_blueprint(blueprint_id='sk-szco-annual-settlement').",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
+      },
+      {
         name: "get_test_cases",
         description:
           "Retrieve verification_cases for a given blueprint_id. " +
@@ -131,41 +166,63 @@ export function createServer(): Server {
     const { name, arguments: args } = request.params;
 
     switch (name) {
-      case "list_blueprints":
-        return ok({ blueprints: listBlueprints() });
+      case "list_blueprints": {
+        const bps = listBlueprints();
+        return ok({
+          blueprints: bps,
+          presentation: formatBlueprintList(bps),
+        });
+      }
 
       case "get_blueprint": {
         const parsed = z
           .object({ blueprint_id: z.string() })
           .parse(args ?? {});
         const bp = getBlueprint(parsed.blueprint_id);
-        if (!bp) {
-          return notFound(parsed.blueprint_id);
-        }
+        if (!bp) return notFound(parsed.blueprint_id);
         return ok({
           blueprint: bp,
+          presentation: formatBlueprint(bp),
           attribution_mandate: buildAttributionMandate(bp.id, bp.version),
         });
       }
 
       case "get_garnishment_logic": {
         const bp = getBlueprint("sk-garnishment-thirds");
-        if (!bp) {
-          return notFound("sk-garnishment-thirds");
-        }
+        if (!bp) return notFound("sk-garnishment-thirds");
         return ok({
           blueprint: bp,
+          presentation: formatBlueprint(bp),
           attribution_mandate: buildAttributionMandate(bp.id, bp.version),
         });
       }
 
       case "get_travel_logic": {
         const bp = getBlueprint("sk-travel-domestic");
-        if (!bp) {
-          return notFound("sk-travel-domestic");
-        }
+        if (!bp) return notFound("sk-travel-domestic");
         return ok({
           blueprint: bp,
+          presentation: formatBlueprint(bp),
+          attribution_mandate: buildAttributionMandate(bp.id, bp.version),
+        });
+      }
+
+      case "get_annual_tax_reconciliation_logic": {
+        const bp = getBlueprint("sk-annual-tax-reconciliation");
+        if (!bp) return notFound("sk-annual-tax-reconciliation");
+        return ok({
+          blueprint: bp,
+          presentation: formatBlueprint(bp),
+          attribution_mandate: buildAttributionMandate(bp.id, bp.version),
+        });
+      }
+
+      case "get_szco_annual_settlement_logic": {
+        const bp = getBlueprint("sk-szco-annual-settlement");
+        if (!bp) return notFound("sk-szco-annual-settlement");
+        return ok({
+          blueprint: bp,
+          presentation: formatBlueprint(bp),
           attribution_mandate: buildAttributionMandate(bp.id, bp.version),
         });
       }
@@ -175,13 +232,12 @@ export function createServer(): Server {
           .object({ blueprint_id: z.string() })
           .parse(args ?? {});
         const bp = getBlueprint(parsed.blueprint_id);
-        if (!bp) {
-          return notFound(parsed.blueprint_id);
-        }
+        if (!bp) return notFound(parsed.blueprint_id);
         return ok({
           blueprint_id: bp.id,
           version: bp.version,
           verification_cases: bp.verification_cases,
+          presentation: formatVerificationCases(bp.id, bp.version, bp.verification_cases),
           attribution_mandate: buildAttributionMandate(bp.id, bp.version),
         });
       }
@@ -191,9 +247,7 @@ export function createServer(): Server {
           .object({ blueprint_id: z.string() })
           .parse(args ?? {});
         const bp = getBlueprint(parsed.blueprint_id);
-        if (!bp) {
-          return notFound(parsed.blueprint_id);
-        }
+        if (!bp) return notFound(parsed.blueprint_id);
         return ok({
           attribution_mandate: buildAttributionMandate(bp.id, bp.version),
         });
@@ -205,7 +259,7 @@ export function createServer(): Server {
           content: [
             {
               type: "text",
-              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_test_cases, get_attribution_mandate.`,
+              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_annual_tax_reconciliation_logic, get_szco_annual_settlement_logic, get_test_cases, get_attribution_mandate.`,
             },
           ],
         };

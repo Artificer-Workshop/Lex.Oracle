@@ -3,7 +3,7 @@
  *
  * Jurisdiction:  SK
  * Topic:         Mesačná čistá mzda zamestnanca (záloha na daň)
- * Legal acts:    Zákon NR SR 461/2003 Z. z. (Sociálne poistenie) — §129, §131, §138
+ * Legal acts:    Zákon NR SR 461/2003 Z. z. (Sociálne poistenie) — §129, §130, §131, §132, §136, §138
  *                Zákon NR SR 580/2004 Z. z. (Zdravotné poistenie) — §12, §13, §13a, §16
  *                Zákon NR SR 595/2003 Z. z. (Daň z príjmov) — §5, §11, §15, §33, §35, §47
  *                Zákon NR SR 601/2003 Z. z. (Životné minimum) — §2
@@ -23,10 +23,10 @@ const URL_601 = "https://www.slov-lex.sk/pravne-predpisy/SK/ZZ/2003/601/";
 const blueprint: Blueprint = {
   id: "sk-payroll-net-wage",
   title: "SK Výpočet čistej mzdy — SP + ZP + záloha na daň (mesačná)",
-  version: "1.0.0",
+  version: "1.1.0",
   jurisdiction: "SK",
   status: "READY",
-  last_reviewed: "2026-05-15",
+  last_reviewed: "2026-05-18",
   summary:
     "Algoritmus výpočtu čistej mzdy zamestnanca zo hrubej mzdy: " +
     "odvody do sociálnej poisťovne (SP, 9,4 %), preddavky zdravotného poistenia " +
@@ -117,17 +117,20 @@ const blueprint: Blueprint = {
   axiomatic_core: [
     {
       name: "SP_EMPLOYEE_RATES",
-      definition: "Sadzby poistného zamestnanca na sociálne poistenie (§129 ods. 1 zákona 461/2003)",
+      definition:
+        "Sadzby poistného zamestnanca na sociálne poistenie: nemocenské (§130), " +
+        "starobné (§131 ods. 1 písm. a)), invalidné (§132), nezamestnanosť (§136 písm. a)) zákona 461/2003",
       value: "nemocenské: 1,4 % | starobné: 4,0 % | invalidné: 3,0 % | nezamestnanosť: 1,0 % | SPOLU: 9,4 %",
       citation: {
         act: "461/2003 Z. z.",
-        paragraph: "§129",
-        odsek: 1,
+        paragraph: "§130",
         effective_from: "2004-01-01",
         url: URL_461,
         quote:
-          "Zamestnanec je povinný platiť poistné na nemocenské poistenie, " +
-          "starobné poistenie, invalidné poistenie a poistenie v nezamestnanosti.",
+          "Sadzba poistného na nemocenské poistenie je pre a) zamestnanca 1,4 % z vymeriavacieho základu. " +
+          "[§131 ods. 1 písm. a)] Sadzba poistného na starobné poistenie je pre a) zamestnanca 4 % z vymeriavacieho základu. " +
+          "[§132] Sadzba poistného na invalidné poistenie je pre a) zamestnanca 3 % z vymeriavacieho základu. " +
+          "[§136 písm. a)] Sadzba poistného na poistenie v nezamestnanosti je pre a) zamestnanca 1 % z vymeriavacieho základu.",
       },
       effective_periods: [
         {
@@ -141,7 +144,7 @@ const blueprint: Blueprint = {
       name: "SP_MAX_BASIS",
       definition:
         "Mesačný maximálny vymeriavací základ SP. Hrubý príjem nad tento strop " +
-        "nepodlieha SP. §138 ods. 6/9 zákona 461/2003.",
+        "nepodlieha SP. §138 ods. 9 zákona 461/2003.",
       value: "temporálny — viď effective_periods",
       citation: {
         act: "461/2003 Z. z.",
@@ -150,9 +153,11 @@ const blueprint: Blueprint = {
         effective_from: "2025-01-01",
         url: URL_461,
         quote:
-          "Maximálny vymeriavací základ je 11-násobok jednej dvanástiny " +
-          "všeobecného vymeriavacieho základu za kalendárny rok, ktorý dva " +
-          "roky predchádza kalendárnemu roku, za ktorý sa platí poistné.",
+          "Maximálny mesačný vymeriavací základ v úhrne je 11-násobok jednej dvanástiny všeobecného " +
+          "vymeriavacieho základu platného v kalendárnom roku, ktorý dva roky predchádza kalendárnemu " +
+          "roku, za ktorý zamestnanec, povinne nemocensky poistená a povinne dôchodkovo poistená " +
+          "samostatne zárobkovo činná osoba a dobrovoľne nemocensky poistená osoba, dobrovoľne " +
+          "dôchodkovo poistená osoba alebo dobrovoľne poistená osoba v nezamestnanosti platí poistné.",
       },
       effective_periods: [
         { from: "2024-01-01", to: "2024-12-31", value: "9 128 EUR/mesiac", note: "7-násobok priem. mzdy 2022 (1 304 EUR)" },
@@ -163,16 +168,19 @@ const blueprint: Blueprint = {
     {
       name: "ZP_EMPLOYEE_RATE",
       definition:
-        "Sadzba preddavku zamestnanca na zdravotné poistenie (§12 ods. 1 zákona 580/2004). " +
+        "Sadzba preddavku zamestnanca na zdravotné poistenie (§12 ods. 1 písm. a) zákona 580/2004). " +
         "Uplatňuje sa na vymeriavací základ znížený o OOP. Osoba s ŤZP: polovičná sadzba.",
       value: "4 % (do 2024-12-31) | 5 % (od 2025-01-01) | ŤZP: polovica príslušnej sadzby",
       citation: {
         act: "580/2004 Z. z.",
         paragraph: "§12",
         odsek: 1,
-        effective_from: "2005-01-01",
+        effective_from: "2025-01-01",
         url: URL_580,
-        quote: "Zamestnanec je povinný platiť preddavok na poistné vo výške … % z vymeriavacieho základu.",
+        quote:
+          "Sadzba poistného je pre a) zamestnanca 5 % z vymeriavacieho základu podľa § 13 ods. 1; " +
+          "ak je zamestnanec osobou so zdravotným postihnutím, sadzba poistného je 2,5 % " +
+          "z vymeriavacieho základu podľa § 13 ods. 1",
       },
       effective_periods: [
         { from: "2005-01-01", to: "2024-12-31", value: "4 % (ŤZP: 2 %)" },
@@ -184,7 +192,7 @@ const blueprint: Blueprint = {
       definition:
         "Odpočítateľná položka ZP (§13a zákona 580/2004). " +
         "Znižuje vymeriavací základ ZP zamestnanca pre nízke príjmy. " +
-        "Plná OOP = 380 EUR; lineárne znižuje sa nad 380 EUR hrubého; nula od 570 EUR hrubého.",
+        "Ročná OOP = 4 560 EUR; mesačná = 380 EUR. Lineárne znižuje sa nad 380 EUR hrubého; nula od 570 EUR hrubého.",
       value: "OOP = max(0, 380 − 2 × max(0, hrubá − 380)); OOP = 0 ak hrubá >= 570",
       citation: {
         act: "580/2004 Z. z.",
@@ -193,13 +201,16 @@ const blueprint: Blueprint = {
         effective_from: "2017-01-01",
         url: URL_580,
         quote:
-          "Od vymeriavacieho základu zamestnanca sa odpočíta odpočítateľná " +
-          "položka … Základná výška odpočítateľnej položky je 380 eur.",
+          "Vymeriavací základ zamestnanca podľa § 13 ods. 1, ktorý vykonáva zárobkovú činnosť " +
+          "v pracovnom pomere, štátnozamestnaneckom pomere, služobnom pomere alebo obdobnom pracovnom " +
+          "vzťahu, z ktorého má právo na príjem zo zárobkovej činnosti podľa § 10b ods. 1 písm. a) " +
+          "a ods. 2 až 4 sa znižuje o odpočítateľnú položku. " +
+          "Odpočítateľná položka je 4 560 eur v rozhodujúcom období, ak v odsekoch 3 až 6 nie je ustanovené inak.",
       },
       effective_periods: [
         {
           from: "2017-01-01",
-          value: "základ = 380 EUR, koeficient znižovania = 2, horná hranica = 570 EUR",
+          value: "ročná OOP = 4 560 EUR (= 380 EUR/mesiac), koeficient znižovania = 2, horná hranica = 570 EUR/mesiac",
           note: "Stabilné od zavedenia.",
         },
       ],
@@ -220,13 +231,20 @@ const blueprint: Blueprint = {
         effective_from: "2004-01-01",
         url: URL_595,
         quote:
-          "Nezdaniteľná časť základu dane na daňovníka je suma zodpovedajúca " +
-          "21-násobku sumy platného životného minima.",
+          "Ak daňovník v príslušnom zdaňovacom období dosiahne základ dane, ktorý " +
+          "a) sa rovná alebo je nižší ako 91,8-násobok sumy životného minima platného k 1. januáru " +
+          "príslušného zdaňovacieho obdobia, nezdaniteľná časť základu dane ročne na daňovníka je " +
+          "suma zodpovedajúca 21,0-násobku sumy životného minima platného k 1. januáru príslušného " +
+          "zdaňovacieho obdobia; " +
+          "b) je vyšší ako 91,8-násobok platného životného minima, nezdaniteľná časť základu dane " +
+          "ročne na daňovníka je suma zodpovedajúca rozdielu 51,6-násobku platného životného minima " +
+          "a jednej tretiny základu dane; ak táto suma je nižšia ako nula, nezdaniteľná časť základu " +
+          "dane ročne na daňovníka sa rovná nule.",
       },
       effective_periods: [
         { from: "2024-01-01", to: "2024-12-31", value: "470,54 EUR/mesiac (21×268,88/12; ŽM k 2024-01-01=268,88 EUR)" },
         { from: "2025-01-01", to: "2025-12-31", value: "479,48 EUR/mesiac (21×273,99/12; ŽM k 2025-01-01=273,99 EUR)" },
-        { from: "2026-01-01", value: "497,28 EUR/mesiac (21×284,16/12; ŽM k 2026-01-01=284,16 EUR)" },
+        { from: "2026-01-01", value: "497,22 EUR/mesiac (21×284,13/12; ŽM k 2026-01-01=284,13 EUR — Opatrenie MPSVR SR 168/2025 Z. z.)" },
       ],
     },
     {
@@ -244,8 +262,14 @@ const blueprint: Blueprint = {
         effective_from: "2013-01-01",
         url: URL_595,
         quote:
-          "Sadzba dane zo základu dane … je: a) 19 % z tej časti základu dane, " +
-          "ktorá neprevyšuje 154,8-násobok sumy platného životného minima …",
+          "Sadzba dane je, okrem § 15a, § 43 a 44, pre fyzickú osobu 1. zo základu dane zisteného " +
+          "podľa § 4 ods. 1 písm. a): " +
+          "1a. 19 % z tej časti základu dane, ktorá nepresiahne 154,8-násobok sumy platného životného minima vrátane, " +
+          "1b. 25 % z tej časti základu dane, ktorá presiahne 154,8-násobok sumy platného životného minima " +
+          "a nepresiahne 212,4-násobok sumy platného životného minima vrátane, " +
+          "1c. 30 % z tej časti základu dane, ktorá presiahne 212,4-násobok sumy platného životného minima " +
+          "a nepresiahne 264-násobok sumy platného životného minima vrátane, " +
+          "1d. 35 % z tej časti základu dane, ktorá presiahne 264-násobok sumy platného životného minima.",
       },
       effective_periods: [
         {
@@ -267,11 +291,17 @@ const blueprint: Blueprint = {
       citation: {
         act: "595/2003 Z. z.",
         paragraph: "§33",
-        effective_from: "2004-01-01",
+        odsek: 1,
+        effective_from: "2025-01-01",
         url: URL_595,
         quote:
-          "Daňovník, ktorý v zdaňovacom období mal zdaniteľné príjmy … " +
-          "si môže uplatniť daňový bonus na každé vyživované dieťa.",
+          "Daňovník, ktorý v zdaňovacom období dosiahol zdaniteľné príjmy podľa § 5 alebo § 6 ods. 1 a 2, " +
+          "si môže uplatniť daňový bonus na každé vyživované dieťa žijúce v domácnosti s daňovníkom, " +
+          "pričom suma daňového bonusu, o ktorú sa znižuje daň, je " +
+          "a) 50 eur mesačne, ak vyživované dieťa dovŕšilo 15 rokov veku a nedovŕšilo 18 rokov veku, " +
+          "a to poslednýkrát za kalendárny mesiac, v ktorom dieťa dovŕši 18 rokov veku, alebo " +
+          "b) 100 eur mesačne, ak vyživované dieťa nedovŕšilo 15 rokov veku, a to poslednýkrát " +
+          "za kalendárny mesiac, v ktorom dieťa dovŕši 15 rokov veku.",
       },
       effective_periods: [
         {
@@ -320,11 +350,14 @@ function computeSpEmployee(gross, date):
       `.trim(),
       citation: {
         act: "461/2003 Z. z.",
-        paragraph: "§129",
-        odsek: 1,
+        paragraph: "§130",
         effective_from: "2004-01-01",
         url: URL_461,
-        quote: "Zamestnanec je povinný platiť poistné na nemocenské poistenie …",
+        quote:
+          "Sadzba poistného na nemocenské poistenie je pre a) zamestnanca 1,4 % z vymeriavacieho základu. " +
+          "[§131 ods. 1 písm. a)] Sadzba poistného na starobné poistenie je pre a) zamestnanca 4 % z vymeriavacieho základu. " +
+          "[§132] Sadzba poistného na invalidné poistenie je pre a) zamestnanca 3 % z vymeriavacieho základu. " +
+          "[§136 písm. a)] Sadzba poistného na poistenie v nezamestnanosti je pre a) zamestnanca 1 % z vymeriavacieho základu.",
       },
       edge_cases: [
         {
@@ -336,7 +369,12 @@ function computeSpEmployee(gross, date):
             odsek: 9,
             effective_from: "2025-01-01",
             url: URL_461,
-            quote: "Maximálny vymeriavací základ je 11-násobok …",
+            quote:
+              "Maximálny mesačný vymeriavací základ v úhrne je 11-násobok jednej dvanástiny všeobecného " +
+              "vymeriavacieho základu platného v kalendárnom roku, ktorý dva roky predchádza kalendárnemu " +
+              "roku, za ktorý zamestnanec, povinne nemocensky poistená a povinne dôchodkovo poistená " +
+              "samostatne zárobkovo činná osoba a dobrovoľne nemocensky poistená osoba, dobrovoľne " +
+              "dôchodkovo poistená osoba alebo dobrovoľne poistená osoba v nezamestnanosti platí poistné.",
           },
         },
         {
@@ -354,7 +392,7 @@ function computeZpOOP(gross, date):
     if date < 2017-01-01:
         return 0  # OOP ešte neplatila
 
-    ZAKLAD = 380    # EUR — plná OOP
+    ZAKLAD = 380    # EUR — plná mesačná OOP (= 4 560 eur ročne / 12)
     HORNY  = 570    # EUR — horná hranica fázového znižovania (OOP = 0)
     KOEF   = 2      # koeficient znižovania
 
@@ -372,7 +410,12 @@ function computeZpOOP(gross, date):
         odsek: 1,
         effective_from: "2017-01-01",
         url: URL_580,
-        quote: "Základná výška odpočítateľnej položky je 380 eur …",
+        quote:
+          "Vymeriavací základ zamestnanca podľa § 13 ods. 1, ktorý vykonáva zárobkovú činnosť " +
+          "v pracovnom pomere, štátnozamestnaneckom pomere, služobnom pomere alebo obdobnom pracovnom " +
+          "vzťahu, z ktorého má právo na príjem zo zárobkovej činnosti podľa § 10b ods. 1 písm. a) " +
+          "a ods. 2 až 4 sa znižuje o odpočítateľnú položku. " +
+          "Odpočítateľná položka je 4 560 eur v rozhodujúcom období, ak v odsekoch 3 až 6 nie je ustanovené inak.",
       },
       edge_cases: [
         {
@@ -416,7 +459,10 @@ function computeZpEmployee(gross, date, ztp=false):
         odsek: 2,
         effective_from: "2005-01-01",
         url: URL_580,
-        quote: "Zamestnanec je povinný platiť preddavok na poistné …",
+        quote:
+          "Preddavok na poistné je povinný vypočítať, platiť a odvádzať, ak tento zákon neustanovuje inak, " +
+          "a) zamestnanec vo výške určenej sadzbou poistného [§ 12 ods. 1 písm. a)] z príjmu podľa § 13 ods. 1 " +
+          "dosiahnutého v príslušnom kalendárnom mesiaci",
       },
       edge_cases: [
         {
@@ -426,9 +472,11 @@ function computeZpEmployee(gross, date, ztp=false):
             act: "580/2004 Z. z.",
             paragraph: "§12",
             odsek: 1,
-            effective_from: "2005-01-01",
+            effective_from: "2025-01-01",
             url: URL_580,
-            quote: "Poistné osoby s ťažkým zdravotným postihnutím je vo výške polovice …",
+            quote:
+              "ak je zamestnanec osobou so zdravotným postihnutím, sadzba poistného je 2,5 % " +
+              "z vymeriavacieho základu podľa § 13 ods. 1",
           },
         },
         {
@@ -452,8 +500,10 @@ zaklad_dane = max(0, hruba - SP_zam - ZP_zam)
         effective_from: "2013-01-01",
         url: URL_595,
         quote:
-          "Čiastkovým základom dane z príjmov zo závislej činnosti je zdaniteľný " +
-          "príjem znížený o poistné a príspevky, ktoré je povinný platiť zamestnanec.",
+          "Základom dane (čiastkovým základom dane) sú zdaniteľné príjmy zo závislej činnosti " +
+          "znížené o poistné a príspevky, ktoré je povinný platiť zamestnanec, alebo príspevky " +
+          "na zahraničné poistenie zamestnanca, na ktorého sa vzťahuje povinné zahraničné poistenie " +
+          "rovnakého druhu.",
       },
       edge_cases: [
         {
@@ -496,7 +546,16 @@ zdanitelny_zaklad = max(0, zaklad_dane - nczd_mesacne)
         odsek: 2,
         effective_from: "2004-01-01",
         url: URL_595,
-        quote: "Nezdaniteľná časť základu dane na daňovníka je suma zodpovedajúca 21-násobku …",
+        quote:
+          "Ak daňovník v príslušnom zdaňovacom období dosiahne základ dane, ktorý " +
+          "a) sa rovná alebo je nižší ako 91,8-násobok sumy životného minima platného k 1. januáru " +
+          "príslušného zdaňovacieho obdobia, nezdaniteľná časť základu dane ročne na daňovníka je " +
+          "suma zodpovedajúca 21,0-násobku sumy životného minima platného k 1. januáru príslušného " +
+          "zdaňovacieho obdobia; " +
+          "b) je vyšší ako 91,8-násobok platného životného minima, nezdaniteľná časť základu dane " +
+          "ročne na daňovníka je suma zodpovedajúca rozdielu 51,6-násobku platného životného minima " +
+          "a jednej tretiny základu dane; ak táto suma je nižšia ako nula, nezdaniteľná časť základu " +
+          "dane ročne na daňovníka sa rovná nule.",
       },
       edge_cases: [
         {
@@ -535,10 +594,18 @@ function computeZaloha(zdanitelny_zaklad_mesacny, date):
       citation: {
         act: "595/2003 Z. z.",
         paragraph: "§35",
-        odsek: 1,
+        odsek: 2,
         effective_from: "2013-01-01",
         url: URL_595,
-        quote: "Zamestnávateľ zrazí zo zdaniteľnej mzdy zamestnanca preddavok na daň …",
+        quote:
+          "Preddavok na daň zo zdaniteľnej mzdy zaokrúhlenej podľa § 47, zúčtovanej a vyplatenej " +
+          "za kalendárny mesiac alebo zdaňovacie obdobie je 19 % z tej časti zdaniteľnej mzdy, " +
+          "ktorá nepresiahne 1/12 sumy 154,8-násobku platného životného minima vrátane, " +
+          "25 % z tej časti zdaniteľnej mzdy, ktorá presiahne 1/12 sumy 154,8-násobku platného " +
+          "životného minima a nepresiahne 1/12 sumy 212,4-násobku platného životného minima vrátane, " +
+          "30 % z tej časti zdaniteľnej mzdy, ktorá presiahne 1/12 sumy 212,4-násobku platného " +
+          "životného minima a nepresiahne 1/12 sumy 264-násobku platného životného minima vrátane " +
+          "a 35 % z tej časti zdaniteľnej mzdy, ktorá presiahne 1/12 sumy 264-násobku platného životného minima.",
       },
       edge_cases: [
         {
@@ -574,9 +641,17 @@ function uplatniBonus(zaloza_na_dan, date, deti_do_15, deti_15_25_student):
       citation: {
         act: "595/2003 Z. z.",
         paragraph: "§33",
-        effective_from: "2004-01-01",
+        odsek: 1,
+        effective_from: "2025-01-01",
         url: URL_595,
-        quote: "Daňovník si môže uplatniť daňový bonus na každé vyživované dieťa …",
+        quote:
+          "Daňovník, ktorý v zdaňovacom období dosiahol zdaniteľné príjmy podľa § 5 alebo § 6 ods. 1 a 2, " +
+          "si môže uplatniť daňový bonus na každé vyživované dieťa žijúce v domácnosti s daňovníkom, " +
+          "pričom suma daňového bonusu, o ktorú sa znižuje daň, je " +
+          "a) 50 eur mesačne, ak vyživované dieťa dovŕšilo 15 rokov veku a nedovŕšilo 18 rokov veku, " +
+          "a to poslednýkrát za kalendárny mesiac, v ktorom dieťa dovŕši 18 rokov veku, alebo " +
+          "b) 100 eur mesačne, ak vyživované dieťa nedovŕšilo 15 rokov veku, a to poslednýkrát " +
+          "za kalendárny mesiac, v ktorom dieťa dovŕši 15 rokov veku.",
       },
       edge_cases: [
         {
@@ -608,20 +683,122 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
         odsek: 3,
         effective_from: "2004-01-01",
         url: URL_595,
-        quote: "Zamestnávateľ je povinný zraziť preddavok na daň pri výplate príjmu.",
+        quote:
+          "Preddavok na daň sa zrazí pri výplate alebo pri poukázaní, alebo pri pripísaní zdaniteľnej " +
+          "mzdy zamestnancovi k dobru bez ohľadu na to, za ktoré obdobie sa táto zdaniteľná mzda vypláca.",
       },
     },
   ],
 
   semantic_mapping: [
-    { step_id: "P2", citation: { act: "461/2003 Z. z.", paragraph: "§129", odsek: 1, effective_from: "2004-01-01", url: URL_461, quote: "Zamestnanec je povinný platiť poistné …" } },
-    { step_id: "P3", citation: { act: "580/2004 Z. z.", paragraph: "§13a", odsek: 1, effective_from: "2017-01-01", url: URL_580, quote: "Základná výška odpočítateľnej položky je 380 eur …" } },
-    { step_id: "P4", citation: { act: "580/2004 Z. z.", paragraph: "§16", odsek: 2, effective_from: "2005-01-01", url: URL_580, quote: "Zamestnanec je povinný platiť preddavok na poistné …" } },
-    { step_id: "P5", citation: { act: "595/2003 Z. z.", paragraph: "§5", odsek: 8, effective_from: "2013-01-01", url: URL_595, quote: "Čiastkovým základom dane … je zdaniteľný príjem znížený o poistné …" } },
-    { step_id: "P6-P7", citation: { act: "595/2003 Z. z.", paragraph: "§11", odsek: 2, effective_from: "2004-01-01", url: URL_595, quote: "Nezdaniteľná časť základu dane …" } },
-    { step_id: "P8", citation: { act: "595/2003 Z. z.", paragraph: "§35", odsek: 1, effective_from: "2013-01-01", url: URL_595, quote: "Preddavok na daň …" } },
-    { step_id: "P9", citation: { act: "595/2003 Z. z.", paragraph: "§33", effective_from: "2004-01-01", url: URL_595, quote: "Daňový bonus …" } },
-    { step_id: "P10", citation: { act: "595/2003 Z. z.", paragraph: "§35", odsek: 3, effective_from: "2004-01-01", url: URL_595, quote: "Zamestnávateľ je povinný zraziť preddavok na daň …" } },
+    {
+      step_id: "P2",
+      citation: {
+        act: "461/2003 Z. z.",
+        paragraph: "§130",
+        effective_from: "2004-01-01",
+        url: URL_461,
+        quote:
+          "Sadzba poistného na nemocenské poistenie je pre a) zamestnanca 1,4 % z vymeriavacieho základu. " +
+          "[§131 ods. 1 písm. a)] Sadzba poistného na starobné poistenie je pre a) zamestnanca 4 % z vymeriavacieho základu. " +
+          "[§132] Sadzba poistného na invalidné poistenie je pre a) zamestnanca 3 % z vymeriavacieho základu. " +
+          "[§136 písm. a)] Sadzba poistného na poistenie v nezamestnanosti je pre a) zamestnanca 1 % z vymeriavacieho základu.",
+      },
+    },
+    {
+      step_id: "P3",
+      citation: {
+        act: "580/2004 Z. z.",
+        paragraph: "§13a",
+        odsek: 1,
+        effective_from: "2017-01-01",
+        url: URL_580,
+        quote:
+          "Vymeriavací základ zamestnanca podľa § 13 ods. 1, ktorý vykonáva zárobkovú činnosť " +
+          "v pracovnom pomere... sa znižuje o odpočítateľnú položku. " +
+          "Odpočítateľná položka je 4 560 eur v rozhodujúcom období, ak v odsekoch 3 až 6 nie je ustanovené inak.",
+      },
+    },
+    {
+      step_id: "P4",
+      citation: {
+        act: "580/2004 Z. z.",
+        paragraph: "§16",
+        odsek: 2,
+        effective_from: "2005-01-01",
+        url: URL_580,
+        quote:
+          "Preddavok na poistné je povinný vypočítať, platiť a odvádzať, ak tento zákon neustanovuje inak, " +
+          "a) zamestnanec vo výške určenej sadzbou poistného [§ 12 ods. 1 písm. a)] z príjmu podľa § 13 ods. 1 " +
+          "dosiahnutého v príslušnom kalendárnom mesiaci",
+      },
+    },
+    {
+      step_id: "P5",
+      citation: {
+        act: "595/2003 Z. z.",
+        paragraph: "§5",
+        odsek: 8,
+        effective_from: "2013-01-01",
+        url: URL_595,
+        quote:
+          "Základom dane (čiastkovým základom dane) sú zdaniteľné príjmy zo závislej činnosti " +
+          "znížené o poistné a príspevky, ktoré je povinný platiť zamestnanec",
+      },
+    },
+    {
+      step_id: "P6-P7",
+      citation: {
+        act: "595/2003 Z. z.",
+        paragraph: "§11",
+        odsek: 2,
+        effective_from: "2004-01-01",
+        url: URL_595,
+        quote:
+          "nezdaniteľná časť základu dane ročne na daňovníka je suma zodpovedajúca 21,0-násobku " +
+          "sumy životného minima platného k 1. januáru príslušného zdaňovacieho obdobia",
+      },
+    },
+    {
+      step_id: "P8",
+      citation: {
+        act: "595/2003 Z. z.",
+        paragraph: "§35",
+        odsek: 2,
+        effective_from: "2013-01-01",
+        url: URL_595,
+        quote:
+          "Preddavok na daň zo zdaniteľnej mzdy zaokrúhlenej podľa § 47 je 19 % z tej časti " +
+          "zdaniteľnej mzdy, ktorá nepresiahne 1/12 sumy 154,8-násobku platného životného minima vrátane, " +
+          "25 %... 30 %... a 35 % z tej časti zdaniteľnej mzdy, ktorá presiahne 1/12 sumy 264-násobku platného životného minima.",
+      },
+    },
+    {
+      step_id: "P9",
+      citation: {
+        act: "595/2003 Z. z.",
+        paragraph: "§33",
+        odsek: 1,
+        effective_from: "2025-01-01",
+        url: URL_595,
+        quote:
+          "Daňovník... si môže uplatniť daňový bonus na každé vyživované dieťa žijúce v domácnosti... " +
+          "suma daňového bonusu je a) 50 eur mesačne (dieťa 15–18 rokov) alebo b) 100 eur mesačne (dieťa do 15 rokov).",
+      },
+    },
+    {
+      step_id: "P10",
+      citation: {
+        act: "595/2003 Z. z.",
+        paragraph: "§35",
+        odsek: 3,
+        effective_from: "2004-01-01",
+        url: URL_595,
+        quote:
+          "Preddavok na daň sa zrazí pri výplate alebo pri poukázaní, alebo pri pripísaní zdaniteľnej " +
+          "mzdy zamestnancovi k dobru bez ohľadu na to, za ktoré obdobie sa táto zdaniteľná mzda vypláca.",
+      },
+    },
   ],
 
   tool: {
@@ -675,7 +852,7 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
       "P2: SP zamestnanca = 9,4 % z min(hrubá, SP_MAX_BASIS). Floor na eurocent za každú zložku.",
       "P3: OOP ZP = max(0, 380 − 2 × max(0, hrubá − 380)). Nula nad 570 EUR hrubého.",
       "P4: ZP = sadzba × (hrubá − OOP). Sadzba: 4 % (do 2024), 5 % (od 2025); ŤZP: polovica.",
-      "P5: Základ dane = max(0, hrubá − SP_zam − ZP_zam).",
+      "P5: Základ dane = max(0, hrubá − SP_zam − ZP_zam). §5 ods. 8/595/2003.",
       "P6–P7: NČZD mesačne = floor(21 × ŽM_1jan / 12). Fázové znižovanie ak základ > 91,8 × ŽM/12.",
       "P8: 4-pásmová progresívna daň z (základ − NČZD). Zaokrúhlenie na najbližší eurocent (§47).",
       "P9: Uplatní daňový bonus (§33). Záloha môže byť záporná (zamestnávateľ vyplatí zamestnancovi).",
@@ -684,12 +861,12 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
     audit_trail_template:
       "{date}: hrubá = {gross} EUR. " +
       "SP: {sp_nem}+{sp_star}+{sp_inv}+{sp_nez} = {sp_spolu} EUR " +
-      "(strop {sp_max_basis} EUR, §129/461/2003). " +
+      "(strop {sp_max_basis} EUR, §130-§136/461/2003). " +
       "OOP ZP: {oop} EUR (§13a/580/2004); " +
       "ZP: {zp_sadzba} % × {zp_vz} = {zp_spolu} EUR (§16/580/2004). " +
       "Základ dane (§5 ods. 8): {gross}−{sp_spolu}−{zp_spolu} = {zaklad_dane} EUR. " +
       "NČZD (§11): {nczd} EUR. Zdaniteľný základ: {zdanitelny} EUR. " +
-      "Daň: 19 %×{p1}+25 %×{p2}+30 %×{p3}+35 %×{p4} = {dan_pred_bonusom} EUR (§35). " +
+      "Daň: 19 %×{p1}+25 %×{p2}+30 %×{p3}+35 %×{p4} = {dan_pred_bonusom} EUR (§35 ods. 2). " +
       "Bonus (§33): {bonus} EUR. Záloha: {zaloza} EUR. " +
       "Čistá mzda: {gross}−{sp_spolu}−{zp_spolu}−{zaloza} = {cista} EUR.",
   },
@@ -699,9 +876,9 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
       id: "VC1_standard_1800eur_aug2025",
       source:
         "Manuálny výpočet podľa platných sadzieb: " +
-        "SP sadzby §129/461/2003, sadzba ZP §12/580/2004 (5 % od 2025-01-01), " +
-        "NČZD §11/595/2003 (ŽM 273,99 EUR platné k 2025-01-01), " +
-        "záloha na daň §35/595/2003. Metodika overená voči kalkulačke Finančnej správy SR 2025.",
+        "SP sadzby §130-§136/461/2003, sadzba ZP §12 ods. 1 písm. a)/580/2004 (5 % od 2025-01-01), " +
+        "NČZD §11 ods. 2/595/2003 (ŽM 273,99 EUR platné k 2025-01-01), " +
+        "záloha na daň §35 ods. 2/595/2003. Metodika overená voči kalkulačke Finančnej správy SR 2025.",
       input: {
         calculation_date: "2025-08-15",
         gross: 1800.0,
@@ -725,28 +902,28 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
         zaklad_dane: 1540.80,     // 1800 − 169,20 − 90,00
         nczd_mesacne: 479.48,     // floor(21 × 273,99 / 12) = floor(479,4825) = 479,48
         zdanitelny_zaklad: 1061.32, // 1540,80 − 479,48
-        // Mesačné h1 (2025) = 154,8 × 273,99 / 12 = 3 534,47 EUR
-        // 1 061,32 < 3 534,47 → celé v pásme 19 %
+        // Mesačné h1 (2025, 2-pásmová) = 176,8 × 273,99 / 12 = 4 036,79 EUR
+        // 1 061,32 < 4 036,79 → celé v pásme 19 %
         zaloza_na_dan: 201.65,    // round(1061,32 × 0,19) = round(201,6508) = 201,65
         bonus_deti: 0,
         zaloza_po_bonuse: 201.65,
         cista_mzda: 1339.15,      // 1800 − 169,20 − 90,00 − 201,65
       },
       legal_reasoning:
-        "§129/461/2003: SP 9,4 % = nem. 1,4 %+star. 4 %+inv. 3 %+nez. 1 %; " +
-        "hrubá 1 800 < strop 15 730 → celá hrubá je VZ. " +
-        "§13a/580/2004: OOP = 0 keďže 1 800 ≥ 570. §16/580/2004: ZP = 5 % × 1 800 = 90 EUR. " +
+        "§130/461/2003: nem. 1,4 % + §131 ods. 1: star. 4 % + §132: inv. 3 % + §136: nez. 1 % = 9,4 %; " +
+        "hrubá 1 800 < strop 15 730 (§138 ods. 9) → celá hrubá je VZ. " +
+        "§13a ods. 1/580/2004: OOP = 0 keďže 1 800 ≥ 570. §12 ods. 1 písm. a)/580/2004: ZP = 5 % × 1 800 = 90 EUR. " +
         "§5 ods. 8/595/2003: základ dane = 1 800−169,20−90 = 1 540,80 EUR. " +
-        "§11/595/2003: NČZD = floor(21×273,99/12) = 479,48; 1 540,80 < 91,8×273,99/12 = 2 093,98 → plná NČZD. " +
-        "Zdaniteľný základ = 1 061,32 EUR < mesačné h1 = 3 534,47 EUR → celé 19 %. " +
-        "§47/595/2003: round(1 061,32×0,19) = round(201,65) = 201,65 EUR. " +
+        "§11 ods. 2 písm. a)/595/2003: NČZD = floor(21×273,99/12) = 479,48; 1 540,80 < 91,8×273,99/12 = 2 093,98 → plná NČZD. " +
+        "Zdaniteľný základ = 1 061,32 EUR < mesačné h1 (2-pásmová 2025) = 4 036,79 EUR → celé 19 %. " +
+        "§35 ods. 2/595/2003 + §47: round(1 061,32×0,19) = round(201,65) = 201,65 EUR. " +
         "Čistá mzda = 1 800−169,20−90,00−201,65 = 1 339,15 EUR.",
     },
 
     {
       id: "VC2_low_income_oop_applies_aug2025",
       source:
-        "Overenie fázového znižovania odpočítateľnej položky ZP §13a. " +
+        "Overenie fázového znižovania odpočítateľnej položky ZP §13a ods. 1 a ods. 4. " +
         "Príjem vo fázovom pásme (380–570 EUR). " +
         "Sadzby rovnaké ako VC1.",
       input: {
@@ -777,17 +954,17 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
         cista_mzda: 450.12,      // 520 − 48,88 − 21,00 − 0
       },
       legal_reasoning:
-        "§13a/580/2004: hrubá = 520 EUR, 380 < 520 < 570 → fázové pásmo; " +
+        "§13a ods. 1/580/2004: hrubá = 520 EUR, 380 < 520 < 570 → fázové pásmo; " +
         "OOP = 380−2×(520−380) = 380−280 = 100 EUR. ZP VZ = 520−100 = 420; ZP = 5 % × 420 = 21 EUR. " +
-        "§5 ods. 8: základ dane = 520−48,88−21,00 = 450,12 EUR. " +
-        "NČZD = 479,48 > základ_dane = 450,12 → zdaniteľný základ = 0. " +
-        "Záloha na daň = 0. Čistá mzda = 520−48,88−21,00−0 = 450,12 EUR.",
+        "§5 ods. 8/595/2003: základ dane = 520−48,88−21,00 = 450,12 EUR. " +
+        "§11 ods. 2 písm. a)/595/2003: NČZD = 479,48 > základ_dane = 450,12 → zdaniteľný základ = 0. " +
+        "§35 ods. 2: záloha na daň = 0. Čistá mzda = 520−48,88−21,00−0 = 450,12 EUR.",
     },
 
     {
       id: "VC3_two_bands_with_children_aug2025",
       source:
-        "Overenie prechodu pásma 19 %+25 % a daňového bonusu §33 (sadzby 2025). " +
+        "Overenie prechodu pásma 19 %+25 % a daňového bonusu §33 ods. 1 (sadzby 2025). " +
         "Sadzby rovnaké ako VC1.",
       input: {
         calculation_date: "2025-08-15",
@@ -805,8 +982,8 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
         zaklad_dane: 3424.0,     // 4 000 − 376 − 200
         nczd_mesacne: 479.48,
         zdanitelny_zaklad: 2944.52, // 3 424 − 479,48
-        // h1 = 154,8 × 273,99 / 12 = 3 534,47 EUR
-        // 2 944,52 < 3 534,47 → celé v pásme 19 %
+        // h1 (2-pásmová 2025) = 176,8 × 273,99 / 12 = 4 036,79 EUR
+        // 2 944,52 < 4 036,79 → celé v pásme 19 %
         pasmo1: 2944.52,
         pasmo2: 0,
         zaloza_pred_bonusom: 559.46, // round(2944,52 × 0,19) = round(559,459) = 559,46
@@ -815,12 +992,13 @@ cista_mzda = hruba - SP_zam - ZP_zam - zaloza_po_bonuse
         cista_mzda: 3064.54,     // 4 000 − 376 − 200 − 359,46
       },
       legal_reasoning:
-        "§129: SP = 9,4 % × 4 000 = 376 EUR. §16: ZP = 5 % × 4 000 = 200 EUR (OOP = 0, 4 000 ≥ 570). " +
-        "§5 ods. 8: základ dane = 4 000−376−200 = 3 424 EUR. " +
-        "§11: NČZD = 479,48; zdaniteľný základ = 3 424−479,48 = 2 944,52 EUR. " +
-        "Mesačné h1 = 154,8×273,99/12 = 3 534,47 EUR; 2 944,52 < 3 534,47 → celé 19 %. " +
+        "§130-§136/461/2003: SP = 9,4 % × 4 000 = 376 EUR. " +
+        "§12 ods. 1 písm. a)/580/2004: ZP = 5 % × 4 000 = 200 EUR (§13a: OOP = 0, 4 000 ≥ 570). " +
+        "§5 ods. 8/595/2003: základ dane = 4 000−376−200 = 3 424 EUR. " +
+        "§11 ods. 2 písm. a)/595/2003: NČZD = 479,48; zdaniteľný základ = 3 424−479,48 = 2 944,52 EUR. " +
+        "§35 ods. 2: mesačné h1 (2-pásmová 2025) = 176,8×273,99/12 = 4 036,79 EUR; 2 944,52 < 4 036,79 → celé 19 %. " +
         "Záloha pred bonusom: round(2 944,52×0,19) = 559,46 EUR. " +
-        "§33 (od 2025-01-01): bonus = 2 × 100 = 200 EUR (deti ≤ 15). " +
+        "§33 ods. 1 písm. b)/595/2003 (od 2025-01-01): bonus = 2 × 100 = 200 EUR (deti ≤ 15). " +
         "Záloha = 559,46−200 = 359,46 EUR. " +
         "Čistá mzda = 4 000−376−200−359,46 = 3 064,54 EUR.",
     },

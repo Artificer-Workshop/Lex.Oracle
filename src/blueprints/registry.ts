@@ -13,11 +13,15 @@ import type { Blueprint } from "./types.js";
 import skGarnishmentThirds from "./sk-garnishment-thirds.js";
 import skPayrollNetWage from "./sk-payroll-net-wage.js";
 import skTravelDomestic from "./sk-travel-domestic.js";
+import skAnnualTaxReconciliation from "./sk-annual-tax-reconciliation.js";
+import skSzcoAnnualSettlement from "./sk-szco-annual-settlement.js";
 
 export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skGarnishmentThirds,
   skPayrollNetWage,
   skTravelDomestic,
+  skAnnualTaxReconciliation,
+  skSzcoAnnualSettlement,
 ];
 
 const BY_ID = new Map<string, Blueprint>(

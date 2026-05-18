@@ -41,6 +41,8 @@ Each blueprint contains:
 | `sk-garnishment-thirds` | 🇸🇰 SK | Salary garnishment — thirds system | NV 268/2006, EP 233/1995 §70–72 | **READY** |
 | `sk-payroll-net-wage` | 🇸🇰 SK | Net wage calculation (SP + ZP + income tax) | 461/2003, 580/2004, 595/2003 | **READY** |
 | `sk-travel-domestic` | 🇸🇰 SK | Domestic travel allowances (meal + vehicle + accommodation) | 283/2002 §5, §7, §8, §9 | **READY** |
+| `sk-annual-tax-reconciliation` | 🇸🇰 SK | Annual tax reconciliation (ročné zúčtovanie §38) — NČZD, DDS/PEPP, 4-band §15, child bonus §33 | 595/2003 §11/§15/§33/§35/§38 | **READY** |
+| `sk-szco-annual-settlement` | 🇸🇰 SK | SZČO annual insurance settlement — SP 33.15 %, ZP 16 % (2026–2027 §38ezk), VZ /1.486, min/max clamping | 461/2003 §138, 580/2004 §13a/§19 | **READY** |
 
 ## Quick start
 
@@ -96,6 +98,9 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 | `list_blueprints` | — | List all available blueprints with id, title, jurisdiction, status |
 | `get_blueprint` | `blueprint_id` | Full blueprint including axiomatic_core, logic_flow, semantic_mapping, and verification_cases |
 | `get_garnishment_logic` | — | Shortcut: full blueprint for `sk-garnishment-thirds` |
+| `get_travel_logic` | — | Shortcut: full blueprint for `sk-travel-domestic` |
+| `get_annual_tax_reconciliation_logic` | — | Shortcut: full blueprint for `sk-annual-tax-reconciliation` |
+| `get_szco_annual_settlement_logic` | — | Shortcut: full blueprint for `sk-szco-annual-settlement` |
 | `get_test_cases` | `blueprint_id` | Verification cases only — useful for test-driven implementation |
 | `get_attribution_mandate` | `blueprint_id` | Required attribution text to include in LLM output |
 
@@ -152,6 +157,9 @@ Lex.Oracle/
       sk-garnishment-thirds.ts      — SK: salary garnishment thirds system
       sk-payroll-net-wage.ts        — SK: net wage (SP + ZP + income tax)
       sk-travel-domestic.ts         — SK: domestic travel allowances
+      sk-annual-tax-reconciliation.ts — SK: annual tax reconciliation (§38)
+      sk-szco-annual-settlement.ts  — SK: SZČO annual insurance settlement
+    format.ts                       — markdown rendering of blueprints for LLM agents
   docs/
     ARCHITECTURE.md                 — MCP architecture and request flow
     BLUEPRINT-SCHEMA.md             — formal Blueprint interface schema
@@ -173,6 +181,17 @@ Contributions are welcome. Before opening a pull request:
 3. Run `npm test` and `npm run lint` — both must pass.
 
 By submitting a contribution you agree that it will be licensed under Apache 2.0.
+
+## Publishing (maintainers)
+
+Releases are automated via `.github/workflows/publish.yml`.
+
+1. Bump `version` in `package.json` and add a new section to `CHANGELOG.md`.
+2. Either:
+   - **Tag-based**: `git tag vX.Y.Z && git push --tags` → workflow runs `npm publish --provenance --access public`.
+   - **Manual**: trigger `Publish to npm` via *Actions → workflow_dispatch*. Default is `dry_run: true` — verify the file list, then re-run with `dry_run: false`.
+3. The workflow requires repo secret `NPM_TOKEN` (npm automation token with publish rights to `@artificer-workshop`).
+4. `prepublishOnly` runs `npm run build && npm test` as a safety gate; CI (`.github/workflows/ci.yml`) runs lint + build + test on every push/PR to `main`.
 
 ## License
 

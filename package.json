@@ -1,12 +1,19 @@
 {
   "name": "@artificer-workshop/lex-oracle",
-  "version": "0.2.0",
-  "description": "MCP server providing deterministic, citable legislative blueprints for Slovak & Czech labour law — payroll, garnishment, travel allowances. Eliminates LLM hallucinations in regulated computations.",
+  "version": "0.3.0",
+  "description": "MCP server providing deterministic, citable legislative blueprints for Slovak & Czech labour law — payroll, garnishment, travel allowances, annual tax reconciliation, SZČO annual insurance settlement. Eliminates LLM hallucinations in regulated computations.",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
   },
+  "files": [
+    "dist",
+    "NOTICE",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "bin": {
     "lex-oracle": "dist/index.js"
   },
@@ -15,7 +22,8 @@
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "test": "node --test --import tsx tests/*.test.ts",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "mcp",

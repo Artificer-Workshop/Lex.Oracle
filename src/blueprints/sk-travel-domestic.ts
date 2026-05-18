@@ -4,10 +4,15 @@
  * Jurisdiction:  SK
  * Topic:         Náhrady pri tuzemskej pracovnej ceste (zamestnanec)
  * Legal acts:    Zákon NR SR 283/2002 Z. z. o cestovných náhradách
- *                §5  — stravné (časové pásma)
+ *                §4  — druhy náhrad (ubytovanie §4 ods. 1 písm. b, vedľajšie výdavky §4 ods. 1 písm. d)
+ *                §5  — stravné (časové pásma, sadzby, krátenie)
  *                §7  — náhrada za použitie osobného vozidla (základná + pohonné látky)
- *                §8  — náhrada preukázaných výdavkov za ubytovanie
- *                §9  — náhrada ďalších potrebných preukázaných výdavkov
+ *                §8  — určenie súm stravného a základnej náhrady (CPI mechanizmus)
+ *                §9  — iné náhrady a vyššie náhrady
+ *
+ * Note on §8/§9 convention: Aether.Logic internal coding uses §8 for ubytovanie
+ * and §9 for vedľajšie výdavky following the legal-citations.lisp registry.
+ * The actual legal provisions are in §4 ods. 1 písm. b) and §4 ods. 1 písm. d).
  *
  * Out of scope:  Zahraničná pracovná cesta (§13–§14), firemné vozidlo (§6),
  *               motorka/bicykel, refundácia verejnej dopravy.
@@ -20,15 +25,15 @@ const URL_283 = "https://www.slov-lex.sk/pravne-predpisy/SK/ZZ/2002/283/";
 const blueprint: Blueprint = {
   id: "sk-travel-domestic",
   title: "SK Cestovné náhrady — tuzemská pracovná cesta (283/2002)",
-  version: "1.0.0",
+  version: "1.1.0",
   jurisdiction: "SK",
   status: "READY",
-  last_reviewed: "2026-05-15",
+  last_reviewed: "2026-05-18",
   summary:
     "Algoritmus výpočtu náhrad pri tuzemskej pracovnej ceste zamestnanca: " +
     "stravné podľa časového pásma (§5), náhrada za použitie osobného vozidla " +
-    "za kilometer (§7), náhrada preukázaných výdavkov za ubytovanie (§8) " +
-    "a náhrada ďalších preukázaných výdavkov (§9). " +
+    "za kilometer (§7), náhrada preukázaných výdavkov za ubytovanie (§4 ods. 1 písm. b) " +
+    "a náhrada preukázaných vedľajších výdavkov (§4 ods. 1 písm. d). " +
     "Sadzby vyhlasuje MPSVR SR v Zbierke zákonov (Opatrenia/Oznámenia), menia sa ~2× ročne. " +
     "Krátenie stravného za zabezpečené stravovanie sa počíta z maximálnej sadzby (pásmo 18+h), " +
     "NIE z aktuálnej sadzby príslušného pásma — typická chyba implementácií.",
@@ -44,7 +49,7 @@ const blueprint: Blueprint = {
   interpretation_notes: [
     {
       issue:
-        "§5 ods. 5 zákona 283/2002: krátenie stravného za zabezpečené stravovanie " +
+        "§5 ods. 6 zákona 283/2002: krátenie stravného za zabezpečené stravovanie " +
         "(raňajky/obed/večera) sa počíta ako percento z MAXIMÁLNEJ sadzby (pásmo nad 18 hodín), " +
         "NIE ako percento z aktuálnej sadzby príslušného časového pásma.",
       chosen_interpretation:
@@ -52,8 +57,8 @@ const blueprint: Blueprint = {
         "Raňajky: 25 % zo sadzby_18plus. Obed: 40 % zo sadzby_18plus. Večera: 35 % zo sadzby_18plus. " +
         "Výsledné stravné = max(0, sadzba_pásma − súčet krátení).",
       rationale:
-        "Explicitný text zákona: §5 ods. 5 — 'zníženie o sumu zodpovedajúcu … " +
-        "zo stravného ustanoveného na časové pásmo nad 18 hodín'. " +
+        "Explicitný text zákona: §5 ods. 6 — 'kráti o 25 % … o 40 % … o 35 % za bezplatne " +
+        "poskytnutú večeru z určenej sumy stravného pre časové pásmo nad 18 hodín'. " +
         "Tento postup prekvapí implementátorov, ktorí predpokladajú krátenie zo sadzby príslušného pásma.",
     },
     {
@@ -98,18 +103,21 @@ const blueprint: Blueprint = {
       name: "STRAVNE_RATES",
       definition:
         "Sadzby stravného pri tuzemskej pracovnej ceste podľa časových pásiem " +
-        "(§5 ods. 2 zákona 283/2002). Tri pásma: 5–12 h, 12–18 h, nad 18 h. " +
+        "(§5 ods. 1 zákona 283/2002). Tri pásma: 5–12 h, 12–18 h, nad 18 h. " +
         "Cesta kratšia ako 5 h: nárok na stravné nevzniká.",
       value: "temporálne — vyhlasuje MPSVR SR v Zbierke zákonov (Opatrenia/Oznámenia)",
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§5",
-        odsek: 2,
+        odsek: 1,
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Stravné pri tuzemskej pracovnej ceste trvajúcej … " +
-          "5 hodín až 12 hodín … 12 hodín až 18 hodín … viac ako 18 hodín …",
+          "Zamestnancovi patrí stravné za každý kalendárny deň pracovnej cesty " +
+          "za podmienok ustanovených týmto zákonom. Suma stravného je určená " +
+          "v závislosti od času trvania pracovnej cesty v kalendárnom dni, pričom " +
+          "čas trvania pracovnej cesty je rozdelený na časové pásma " +
+          "a) 5 až 12 hodín, b) nad 12 hodín až 18 hodín, c) nad 18 hodín.",
       },
       effective_periods: [
         { from: "2024-09-01", to: "2025-03-31", value: "5–12 h: 8,30 EUR | 12–18 h: 12,30 EUR | nad 18 h: 18,40 EUR", note: "Oznámenie 211/2024 Z. z." },
@@ -143,7 +151,7 @@ const blueprint: Blueprint = {
     {
       name: "KM_FUEL",
       definition:
-        "Náhrada za spotrebované pohonné látky za km (§7 ods. 3 zákona 283/2002). " +
+        "Náhrada za spotrebované pohonné látky za km (§7 ods. 4 zákona 283/2002). " +
         "Výpočet: km × (spotreba_na_100km / 100) × cena_za_liter. " +
         "Cena za liter: priemerná cena ŠÚ SR pre príslušné obdobie, " +
         "alebo skutočná dokladovaná cena ak zamestnanec predloží doklad o kúpe.",
@@ -151,12 +159,14 @@ const blueprint: Blueprint = {
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§7",
-        odsek: 3,
+        odsek: 4,
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Náhrada za spotrebované pohonné látky sa určí podľa cien pohonných látok " +
-          "platných v čase použitia vozidla … a spotreby pohonných látok.",
+          "Zamestnancovi patrí náhrada za spotrebované pohonné látky v sume " +
+          "zodpovedajúcej súčinu jednotkovej ceny pohonnej látky podľa odseku 5 " +
+          "a spotreby pohonných látok podľa odsekov 6 až 10 za každý aj začatý " +
+          "kilometer jazdy.",
       },
       effective_periods: [
         {
@@ -170,19 +180,24 @@ const blueprint: Blueprint = {
     {
       name: "MEAL_DEDUCTION_PERCENTAGES",
       definition:
-        "Percentá krátenia stravného za zabezpečené stravovanie (§5 ods. 5 zákona 283/2002). " +
+        "Percentá krátenia stravného za zabezpečené stravovanie (§5 ods. 6 zákona 283/2002). " +
         "Uplatňujú sa na sadzbu pásma nad 18 h (NIE na aktuálnu sadzbu príslušného pásma).",
       value: "raňajky: 25 % zo sadzby_18plus | obed: 40 % zo sadzby_18plus | večera: 35 % zo sadzby_18plus",
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§5",
-        odsek: 5,
+        odsek: 6,
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Ak zamestnanec má zabezpečené bezplatné stravovanie, zamestnávateľ môže " +
-          "znížiť stravné … o sumu zodpovedajúcu … zo stravného ustanoveného " +
-          "na časové pásmo nad 18 hodín.",
+          "Ak má zamestnanec na pracovnej ceste preukázane zabezpečené bezplatné " +
+          "stravovanie v celom rozsahu, zamestnávateľ mu stravné neposkytuje. " +
+          "Ak má zamestnanec na pracovnej ceste preukázane zabezpečené bezplatné " +
+          "stravovanie čiastočne, zamestnávateľ stravné určené podľa odsekov 1, 2 " +
+          "alebo 5 kráti o 25 % za bezplatne poskytnuté raňajky, o 40 % za bezplatne " +
+          "poskytnutý obed a o 35 % za bezplatne poskytnutú večeru z určenej sumy " +
+          "stravného pre časové pásmo nad 18 hodín alebo z najvyššej dohodnutej sumy " +
+          "stravného podľa odseku 5.",
       },
       effective_periods: [
         {
@@ -195,7 +210,7 @@ const blueprint: Blueprint = {
     {
       name: "ACCOMMODATION_PASSTHROUGH",
       definition:
-        "Náhrada preukázaných výdavkov za ubytovanie (§8 zákona 283/2002). " +
+        "Náhrada preukázaných výdavkov za ubytovanie (§4 ods. 1 písm. b zákona 283/2002). " +
         "Plná preukázaná suma — bez stropu, bez tabuľky sadzieb. " +
         "Zamestnávateľ prepláca skutočné výdavky na základe dokladu.",
       value: "ubytovanie_EUR = skutočné_preukázané_výdavky (doklad povinný)",
@@ -205,14 +220,13 @@ const blueprint: Blueprint = {
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Zamestnávateľ poskytuje zamestnancovi náhradu preukázaných výdavkov " +
-          "za ubytovanie.",
+          "náhrada preukázaných výdavkov za ubytovanie",
       },
     },
     {
       name: "MISC_EXPENSES_PASSTHROUGH",
       definition:
-        "Náhrada ďalších potrebných preukázaných výdavkov (§9 zákona 283/2002). " +
+        "Náhrada preukázaných potrebných vedľajších výdavkov (§4 ods. 1 písm. d zákona 283/2002). " +
         "Plná preukázaná suma — bez tabuľky sadzieb. " +
         "Príklady: parkovné, diaľničné poplatky, kongresový poplatok, úschova batožiny.",
       value: "ine_vydavky_EUR = skutočné_preukázané_výdavky (doklad povinný)",
@@ -222,8 +236,7 @@ const blueprint: Blueprint = {
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Zamestnávateľ poskytuje zamestnancovi náhradu ďalších potrebných " +
-          "preukázaných výdavkov.",
+          "náhrada preukázaných potrebných vedľajších výdavkov",
       },
     },
   ],
@@ -237,8 +250,8 @@ const blueprint: Blueprint = {
     "STEP_T6: Základná náhrada za vozidlo = km × KM_RATE (osobné vozidlo alebo motorka).",
     "STEP_T7: Náhrada za pohonné látky = km × (spotreba / 100) × cena_za_liter (ak je zadaná spotreba).",
     "STEP_T8: Celková náhrada za vozidlo = základná náhrada + náhrada za PHL.",
-    "STEP_T9: Ubytovanie = preukázané výdavky (§8 — passthrough).",
-    "STEP_T10: Vedľajšie výdavky = preukázané výdavky (§9 — passthrough).",
+    "STEP_T9: Ubytovanie = preukázané výdavky (§4 ods. 1 písm. b — passthrough).",
+    "STEP_T10: Vedľajšie výdavky = preukázané výdavky (§4 ods. 1 písm. d — passthrough).",
     "STEP_T11: Celková náhrada = stravné + vozidlo + ubytovanie + vedľajšie výdavky.",
   ],
 
@@ -264,10 +277,15 @@ function celkoveHodinyDna(cesty):
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§5",
-        odsek: 2,
+        odsek: 1,
         effective_from: "2002-07-01",
         url: URL_283,
-        quote: "Stravné pri tuzemskej pracovnej ceste trvajúcej 5 hodín až 12 hodín …",
+        quote:
+          "Zamestnancovi patrí stravné za každý kalendárny deň pracovnej cesty " +
+          "za podmienok ustanovených týmto zákonom. Suma stravného je určená " +
+          "v závislosti od času trvania pracovnej cesty v kalendárnom dni, pričom " +
+          "čas trvania pracovnej cesty je rozdelený na časové pásma " +
+          "a) 5 až 12 hodín, b) nad 12 hodín až 18 hodín, c) nad 18 hodín.",
       },
       edge_cases: [
         {
@@ -324,12 +342,18 @@ function computeStravne(date, hodiny, raňajky=false, obed=false, vecera=false,
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§5",
-        odsek: 5,
+        odsek: 6,
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Ak zamestnanec má zabezpečené bezplatné stravovanie … zníženie " +
-          "zo stravného ustanoveného na časové pásmo nad 18 hodín.",
+          "Ak má zamestnanec na pracovnej ceste preukázane zabezpečené bezplatné " +
+          "stravovanie v celom rozsahu, zamestnávateľ mu stravné neposkytuje. " +
+          "Ak má zamestnanec na pracovnej ceste preukázane zabezpečené bezplatné " +
+          "stravovanie čiastočne, zamestnávateľ stravné určené podľa odsekov 1, 2 " +
+          "alebo 5 kráti o 25 % za bezplatne poskytnuté raňajky, o 40 % za bezplatne " +
+          "poskytnutý obed a o 35 % za bezplatne poskytnutú večeru z určenej sumy " +
+          "stravného pre časové pásmo nad 18 hodín alebo z najvyššej dohodnutej sumy " +
+          "stravného podľa odseku 5.",
       },
       edge_cases: [
         {
@@ -374,12 +398,16 @@ function computeNahradaVozidlo(date, km, spotreba_l_na_100km=null,
       citation: {
         act: "283/2002 Z. z.",
         paragraph: "§7",
-        odsek: 2,
+        odsek: 1,
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Zamestnancovi patrí za každý kilometer jazdy základná náhrada … " +
-          "a náhrada za spotrebované pohonné látky.",
+          "Ak sa zamestnanec písomne dohodne so zamestnávateľom, že pri pracovnej " +
+          "ceste použije motorové vozidlo, ktoré je cestným vozidlom alebo traktorom, " +
+          "okrem vozidla poskytnutého zamestnávateľom, patrí mu " +
+          "a) základná náhrada za každý aj začatý kilometer jazdy a náhrada za " +
+          "spotrebované pohonné látky alebo " +
+          "b) náhrada za použitie vozidla podľa odseku 12.",
       },
       edge_cases: [
         {
@@ -392,7 +420,7 @@ function computeNahradaVozidlo(date, km, spotreba_l_na_100km=null,
           condition: "Zamestnanec predloží doklad o kúpe pohonných látok (skutočná cena)",
           behaviour:
             "Použije sa skutočná dokladovaná cena za liter. Môže prevýšiť priemernú cenu ŠÚ SR. " +
-            "Zákon umožňuje náhradu v skutočnej výške pri preukázaní dokladom.",
+            "Zákon umožňuje náhradu v skutočnej výške pri preukázaní dokladom (§7 ods. 5).",
         },
         {
           condition: "Prívesný vozík (§7 ods. 4 zákona 283/2002)",
@@ -405,7 +433,7 @@ function computeNahradaVozidlo(date, km, spotreba_l_na_100km=null,
 
     {
       id: "T9",
-      description: "Ubytovanie — §8 passthrough",
+      description: "Ubytovanie — §4 ods. 1 písm. b passthrough",
       pseudocode: `
 function computeUbytovanie(preukaz_vydavok_eur):
     if preukaz_vydavok_eur is None or preukaz_vydavok_eur <= 0:
@@ -419,7 +447,7 @@ function computeUbytovanie(preukaz_vydavok_eur):
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Zamestnávateľ poskytuje zamestnancovi náhradu preukázaných výdavkov za ubytovanie.",
+          "náhrada preukázaných výdavkov za ubytovanie",
       },
       edge_cases: [
         {
@@ -431,7 +459,7 @@ function computeUbytovanie(preukaz_vydavok_eur):
 
     {
       id: "T10",
-      description: "Vedľajšie výdavky — §9 passthrough",
+      description: "Vedľajšie výdavky — §4 ods. 1 písm. d passthrough",
       pseudocode: `
 function computeVedlajsieVydavky(preukaz_vydavok_eur):
     if preukaz_vydavok_eur is None or preukaz_vydavok_eur <= 0:
@@ -444,7 +472,7 @@ function computeVedlajsieVydavky(preukaz_vydavok_eur):
         effective_from: "2002-07-01",
         url: URL_283,
         quote:
-          "Zamestnávateľ poskytuje zamestnancovi náhradu ďalších potrebných preukázaných výdavkov.",
+          "náhrada preukázaných potrebných vedľajších výdavkov",
       },
     },
 
@@ -467,11 +495,67 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
   ],
 
   semantic_mapping: [
-    { step_id: "T2", citation: { act: "283/2002 Z. z.", paragraph: "§5", odsek: 2, effective_from: "2002-07-01", url: URL_283, quote: "Stravné pri tuzemskej pracovnej ceste …" } },
-    { step_id: "T3-T5", citation: { act: "283/2002 Z. z.", paragraph: "§5", odsek: 5, effective_from: "2002-07-01", url: URL_283, quote: "Zníženie zo stravného ustanoveného na časové pásmo nad 18 hodín." } },
-    { step_id: "T6-T8", citation: { act: "283/2002 Z. z.", paragraph: "§7", odsek: 2, effective_from: "2002-07-01", url: URL_283, quote: "Za každý kilometer jazdy základná náhrada …" } },
-    { step_id: "T9", citation: { act: "283/2002 Z. z.", paragraph: "§8", effective_from: "2002-07-01", url: URL_283, quote: "Náhrada preukázaných výdavkov za ubytovanie." } },
-    { step_id: "T10", citation: { act: "283/2002 Z. z.", paragraph: "§9", effective_from: "2002-07-01", url: URL_283, quote: "Náhrada ďalších potrebných preukázaných výdavkov." } },
+    {
+      step_id: "T2",
+      citation: {
+        act: "283/2002 Z. z.",
+        paragraph: "§5",
+        odsek: 1,
+        effective_from: "2002-07-01",
+        url: URL_283,
+        quote:
+          "Suma stravného je určená v závislosti od času trvania pracovnej cesty " +
+          "v kalendárnom dni, pričom čas trvania pracovnej cesty je rozdelený na " +
+          "časové pásma a) 5 až 12 hodín, b) nad 12 hodín až 18 hodín, c) nad 18 hodín.",
+      },
+    },
+    {
+      step_id: "T3-T5",
+      citation: {
+        act: "283/2002 Z. z.",
+        paragraph: "§5",
+        odsek: 6,
+        effective_from: "2002-07-01",
+        url: URL_283,
+        quote:
+          "kráti o 25 % za bezplatne poskytnuté raňajky, o 40 % za bezplatne " +
+          "poskytnutý obed a o 35 % za bezplatne poskytnutú večeru z určenej sumy " +
+          "stravného pre časové pásmo nad 18 hodín.",
+      },
+    },
+    {
+      step_id: "T6-T8",
+      citation: {
+        act: "283/2002 Z. z.",
+        paragraph: "§7",
+        odsek: 1,
+        effective_from: "2002-07-01",
+        url: URL_283,
+        quote:
+          "patrí mu a) základná náhrada za každý aj začatý kilometer jazdy " +
+          "a náhrada za spotrebované pohonné látky.",
+      },
+    },
+    {
+      step_id: "T9",
+      citation: {
+        act: "283/2002 Z. z.",
+        paragraph: "§8",
+        effective_from: "2002-07-01",
+        url: URL_283,
+        quote: "náhrada preukázaných výdavkov za ubytovanie",
+      },
+    },
+    {
+      step_id: "T10",
+      citation: {
+        act: "283/2002 Z. z.",
+        paragraph: "§9",
+        effective_from: "2002-07-01",
+        url: URL_283,
+        quote: "náhrada preukázaných potrebných vedľajších výdavkov",
+      },
+    },
   ],
 
   tool: {
@@ -479,7 +563,7 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
     description:
       "Vráti kompletný blueprint pre výpočet náhrad pri tuzemskej pracovnej ceste. " +
       "Pokrýva: stravné podľa časového pásma (§5), náhrada za km + pohonné látky (§7), " +
-      "ubytovanie ako preukázané výdavky (§8), vedľajšie výdavky (§9). " +
+      "ubytovanie ako preukázané výdavky (§4 ods. 1 písm. b), vedľajšie výdavky (§4 ods. 1 písm. d). " +
       "Kritická implementačná poznámka: krátenie stravného za zabezpečené stravovanie " +
       "sa počíta vždy zo sadzby pásma nad 18 h, nie z aktuálnej sadzby príslušného pásma.",
     input_parameters: [
@@ -546,7 +630,7 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
       {
         name: "accommodation_eur",
         type: "number",
-        description: "Preukázané výdavky za ubytovanie v EUR (§8). Null ak sa ubytovanie nevyskytlo.",
+        description: "Preukázané výdavky za ubytovanie v EUR (§4 ods. 1 písm. b). Null ak sa ubytovanie nevyskytlo.",
         required: false,
         unit: "EUR",
       },
@@ -554,7 +638,7 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
         name: "misc_expenses_eur",
         type: "number",
         description:
-          "Preukázané vedľajšie výdavky v EUR (§9): parkovné, diaľničné poplatky, kongresový poplatok, ...",
+          "Preukázané vedľajšie výdavky v EUR (§4 ods. 1 písm. d): parkovné, diaľničné poplatky, kongresový poplatok, ...",
         required: false,
         unit: "EUR",
       },
@@ -567,8 +651,8 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
       "T6: Základná náhrada za vozidlo = km × sadzba_km (podľa dátumu a typu vozidla).",
       "T7: Náhrada za PHL = km × (spotreba/100) × cena_za_liter. Ak nie je doklad, použiť priemer ŠÚ SR.",
       "T8: Celková náhrada za vozidlo = základná + PHL.",
-      "T9: Ubytovanie = preukázané výdavky (§8 passthrough).",
-      "T10: Vedľajšie výdavky = preukázané výdavky (§9 passthrough).",
+      "T9: Ubytovanie = preukázané výdavky (§4 ods. 1 písm. b passthrough).",
+      "T10: Vedľajšie výdavky = preukázané výdavky (§4 ods. 1 písm. d passthrough).",
       "T11: Celková náhrada = stravné + vozidlo + ubytovanie + vedľajšie výdavky.",
     ],
     audit_trail_template:
@@ -578,8 +662,8 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
       "Vozidlo: {km} km × {sadzba_km} EUR/km = {zakladna_nahrada} EUR; " +
       "PHL {litre} L × {cena_phl} EUR/L = {nahrada_phl} EUR; " +
       "náhrada za vozidlo spolu = {nahrada_vozidlo} EUR (§7/283/2002). " +
-      "Ubytovanie: {ubytovanie} EUR (§8/283/2002). " +
-      "Vedľajšie výdavky: {vedlajsie} EUR (§9/283/2002). " +
+      "Ubytovanie: {ubytovanie} EUR (§4 ods. 1 písm. b / 283/2002). " +
+      "Vedľajšie výdavky: {vedlajsie} EUR (§4 ods. 1 písm. d / 283/2002). " +
       "SPOLU: {celkova_nahrada} EUR.",
   },
 
@@ -618,7 +702,7 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
         celkova_nahrada_eur: 24.10, // 9,30 + 14,80
       },
       legal_reasoning:
-        "§5 ods. 2/283/2002: 8 h → pásmo 5–12 h; Oznámenie 280/2025: sadzba = 9,30 EUR. " +
+        "§5 ods. 1/283/2002: 8 h → pásmo 5–12 h; Oznámenie 280/2025: sadzba = 9,30 EUR. " +
         "Žiadne zabezpečené stravovanie → žiadne krátenie. Stravné = 9,30 EUR. " +
         "§7 ods. 2: sadzba km podľa Oznámenia 97/2025 Z. z. = 0,296 EUR/km. " +
         "Základná náhrada: 50 × 0,296 = 14,80 EUR. Spotreba nezadaná → náhrada za PHL = 0. " +
@@ -662,13 +746,13 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
         celkova_nahrada_eur: 77.73, // 15,45 + 62,28
       },
       legal_reasoning:
-        "§5 ods. 2: 20 h → pásmo nad 18 h; sadzba = 20,60 EUR. " +
-        "§5 ods. 5: krátenie za raňajky = 25 % × sadzba_18plus = 25 % × 20,60 = 5,15 EUR. " +
+        "§5 ods. 1/283/2002: 20 h → pásmo nad 18 h; sadzba = 20,60 EUR. " +
+        "§5 ods. 6: krátenie za raňajky = 25 % × sadzba_18plus = 25 % × 20,60 = 5,15 EUR. " +
         "KĽÚČ: krátenie sa počíta zo sadzby_18plus (20,60), nie zo sadzby pásma " +
         "(tu rovnaká, ale pri kratšej ceste by bol rozdiel). " +
         "Stravné = 20,60 − 5,15 = 15,45 EUR. " +
         "§7 ods. 2: 150 km × 0,296 = 44,40 EUR. " +
-        "§7 ods. 3: PHL = 150 × 7,5/100 × 1,589 = 11,25 L × 1,589 = 17,88 EUR (zaokrúhlené). " +
+        "§7 ods. 4: PHL = 150 × 7,5/100 × 1,589 = 11,25 L × 1,589 = 17,88 EUR (zaokrúhlené). " +
         "Náhrada za vozidlo = 44,40 + 17,88 = 62,28 EUR. " +
         "Celková náhrada = 15,45 + 62,28 = 77,73 EUR.",
     },
@@ -712,13 +796,13 @@ celkova_nahrada = stravne + nahrada_vozidlo + ubytovanie + vedlajsie_vydavky
       legal_reasoning:
         "Dátum cesty 2026-01-15: stravné sadzby z Oznámenia 280/2025 (:do nil) platia ďalej " +
         "(k dátumu spracovania neboli vyhlásené novšie sadzby). Pásmo 5–12 h = 9,30, nad 18 h = 20,60. " +
-        "§5 ods. 5: krátenie za obed = 40 % × 20,60 = 8,24 EUR " +
+        "§5 ods. 6: krátenie za obed = 40 % × 20,60 = 8,24 EUR " +
         "(základ sadzba_18plus = 20,60, nie sadzba pásma = 9,30). " +
         "Stravné = max(0, 9,30 − 8,24) = 1,06 EUR. " +
         "§7 ods. 2 (Oznámenie 340/2025, od 2026-01-01): sadzba km = 0,313 EUR/km. " +
         "Základná náhrada = 30 × 0,313 = 9,39 EUR. " +
-        "§8: ubytovanie = 89,00 EUR (preukázané, plná náhrada). " +
-        "§9: vedľajšie výdavky = 12,50 EUR (preukázané). " +
+        "§4 ods. 1 písm. b: ubytovanie = 89,00 EUR (preukázané, plná náhrada). " +
+        "§4 ods. 1 písm. d: vedľajšie výdavky = 12,50 EUR (preukázané). " +
         "Celková náhrada = 1,06 + 9,39 + 89,00 + 12,50 = 111,95 EUR.",
     },
   ],

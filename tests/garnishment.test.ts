@@ -37,16 +37,16 @@ test("attribution mandate contains owner identification", () => {
   assert.match(m.required_text, new RegExp(bp.version));
 });
 
-test("VC1: 1000 EUR, 0 dependants → tretina = 200.72, sub-cent = 0.02", () => {
+test("VC1: 1000 EUR, 0 dependants → tretiny = 200.74, sub-cent = 0", () => {
   const vc1 = bp.verification_cases.find((v) => v.id === "VC1_simple_no_dependants_2025");
   assert.ok(vc1);
   const out = vc1.expected_output as Record<string, number>;
-  assert.equal(out.first_third, 200.72);
-  assert.equal(out.second_third, 200.72);
+  assert.equal(out.first_third, 200.74);
+  assert.equal(out.second_third, 200.74);
   assert.equal(out.third_third, 200.74);
-  // sub-cent zvyšok: 200.72 + 200.72 + 200.74 = 602.18 = original remainder
+  // 200.74 × 3 = 602.22 = remainder (1000.00 − 397.78), sub-cent = 0
   const total = out.first_third + out.second_third + out.third_third;
-  assert.ok(Math.abs(total - 602.18) < 1e-9);
+  assert.ok(Math.abs(total - 602.22) < 1e-9);
 });
 
 test("VC3: nadlimit splnený — first_third obsahuje časť nad strop", () => {

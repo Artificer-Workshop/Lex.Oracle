@@ -15,6 +15,7 @@ Lex.Oracle je **MCP server**, ktorý poskytuje LLM agentom strojovo čitateľné
 ┌─────────────────────────────────────────────────────────────┐
 │ src/index.ts          → stdio transport boot                │
 │ src/server.ts         → tool registration + dispatch        │
+│ src/format.ts         → markdown rendering (citovateľné)    │
 │ src/attribution.ts    → mandát atribúcie (LICENSE §3)       │
 └──────────────────────────┬──────────────────────────────────┘
                            │
