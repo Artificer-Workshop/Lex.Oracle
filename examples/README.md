@@ -5,7 +5,7 @@ Runnable examples demonstrating how to consume Lex.Oracle from code.
 ## node-client.mjs
 
 Node.js ≥ 20 client using the official MCP SDK.
-Connects via `npx @artificer-workshop/lex-oracle` — no local clone required.
+Connects via `npx @artificer_workshop/lex-oracle` — no local clone required.
 
 **Install the SDK once:**
 

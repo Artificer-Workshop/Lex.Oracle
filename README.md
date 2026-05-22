@@ -3,8 +3,8 @@
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/protocol-MCP%20(JSON--RPC%202.0)-green.svg)](https://modelcontextprotocol.io)
 [![Node.js ≥20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen.svg)](https://nodejs.org)
-[![npm](https://img.shields.io/npm/v/@artificer-workshop/lex-oracle.svg)](https://www.npmjs.com/package/@artificer-workshop/lex-oracle)
-[![npm downloads](https://img.shields.io/npm/dw/@artificer-workshop/lex-oracle.svg)](https://www.npmjs.com/package/@artificer-workshop/lex-oracle)
+[![npm](https://img.shields.io/npm/v/@artificer_workshop/lex-oracle.svg)](https://www.npmjs.com/package/@artificer_workshop/lex-oracle)
+[![npm downloads](https://img.shields.io/npm/dw/@artificer_workshop/lex-oracle.svg)](https://www.npmjs.com/package/@artificer_workshop/lex-oracle)
 
 > **Give your LLM a law to stand on.**
 > Machine-readable, paragraph-level blueprints for Slovak and Czech payroll,
@@ -88,7 +88,7 @@ Requires **Node.js ≥ 20**.
 ### One-liner (no install needed)
 
 ```bash
-npx -y @artificer-workshop/lex-oracle
+npx -y @artificer_workshop/lex-oracle
 ```
 
 The server starts on stdio and waits for MCP JSON-RPC calls.
@@ -103,7 +103,7 @@ or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
   "mcpServers": {
     "lex-oracle": {
       "command": "npx",
-      "args": ["-y", "@artificer-workshop/lex-oracle"]
+      "args": ["-y", "@artificer_workshop/lex-oracle"]
     }
   }
 }
@@ -119,7 +119,7 @@ Add to your project `.cursor/mcp.json` (Cursor), `.windsurf/mcp.json`
   "mcpServers": {
     "lex-oracle": {
       "command": "npx",
-      "args": ["-y", "@artificer-workshop/lex-oracle"]
+      "args": ["-y", "@artificer_workshop/lex-oracle"]
     }
   }
 }

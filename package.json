@@ -1,5 +1,5 @@
 {
-  "name": "@artificer-workshop/lex-oracle",
+  "name": "@artificer_workshop/lex-oracle",
   "version": "0.5.0",
   "description": "MCP server providing deterministic, citable legislative blueprints for Slovak and Czech labour & B2B tax law — SK: payroll, garnishment, travel, annual reconciliation, SZČO settlement, DPH, DPPO, depreciation, RZ ZP, withholding tax. CZ: payroll net wage. Eliminates LLM hallucinations in regulated computations.",
   "type": "module",

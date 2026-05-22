@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@artificer-workshop/lex-oracle` will be documented in this file.
+All notable changes to `@artificer_workshop/lex-oracle` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package.json`: version 0.4.0 → 0.5.0, description extended for CZ, added CZ-law keywords
 - `SERVER_VERSION` 0.4.0 → 0.5.0
 
-
+## [0.4.0] — 2026-05-18
 
 ### Added
 - **Slovenský B2B segment — 5 nových blueprintov** (status: READY):

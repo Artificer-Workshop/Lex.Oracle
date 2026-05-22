@@ -15,7 +15,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const transport = new StdioClientTransport({
   command: "npx",
-  args: ["-y", "@artificer-workshop/lex-oracle"],
+  args: ["-y", "@artificer_workshop/lex-oracle"],
 });
 
 const client = new Client({ name: "lex-oracle-example", version: "1.0.0" });
