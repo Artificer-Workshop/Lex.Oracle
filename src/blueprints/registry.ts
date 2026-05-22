@@ -20,6 +20,7 @@ import skB2bDppo from "./sk-b2b-dppo.js";
 import skB2bOdpisy from "./sk-b2b-odpisy.js";
 import skB2bRzZp from "./sk-b2b-rz-zp.js";
 import skB2bZrazkovaDan from "./sk-b2b-zrazkova-dan.js";
+import czPayrollNetWage from "./cz-payroll-net-wage.js";
 
 export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skGarnishmentThirds,
@@ -32,6 +33,7 @@ export const BLUEPRINTS: ReadonlyArray<Blueprint> = [
   skB2bOdpisy,
   skB2bRzZp,
   skB2bZrazkovaDan,
+  czPayrollNetWage,
 ];
 
 const BY_ID = new Map<string, Blueprint>(

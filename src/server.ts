@@ -26,7 +26,7 @@ import {
 } from "./format.js";
 
 const SERVER_NAME = "lex-oracle";
-const SERVER_VERSION = "0.4.0";
+const SERVER_VERSION = "0.5.0";
 
 export function createServer(): Server {
   const server = new Server(
@@ -179,6 +179,18 @@ export function createServer(): Server {
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
       },
       {
+        name: "get_cz_payroll_logic",
+        description:
+          "Retrieve the complete blueprint for Czech net wage calculation — " +
+          "Zákon 589/1992 Sb. (SP 7.1% = 6.5% důchodové + 0.6% nemocenské od 2024-01-01) + " +
+          "Zákon 592/1992 Sb. (ZP 4.5%, min. základ = minimální mzda) + " +
+          "Zákon 586/1992 Sb. (záloha na daň 15%/23%, sleva na poplatníka 2 570 CZK/měsíc, " +
+          "superhrubá zrušena od 2021-01-01, všechny složky ceiling na celé CZK). " +
+          "4 verifikační případy: standard 30 000 / min. mzda / vyšší příjem / bez prohlášení. " +
+          "Shortcut for get_blueprint(blueprint_id='cz-payroll-net-wage').",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      },
+      {
         name: "get_test_cases",
         description:
           "Retrieve verification_cases for a given blueprint_id. " +
@@ -303,6 +315,12 @@ export function createServer(): Server {
       case "get_b2b_zrazkova_dan_logic": {
         const bp = getBlueprint("sk-b2b-zrazkova-dan");
         if (!bp) return notFound("sk-b2b-zrazkova-dan");
+        return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
+      }
+
+      case "get_cz_payroll_logic": {
+        const bp = getBlueprint("cz-payroll-net-wage");
+        if (!bp) return notFound("cz-payroll-net-wage");
         return ok({ blueprint: bp, presentation: formatBlueprint(bp), attribution_mandate: buildAttributionMandate(bp.id, bp.version) });
       }
 

@@ -5,7 +5,28 @@ All notable changes to `@artificer-workshop/lex-oracle` will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] — 2026-05-18
+## [0.5.0] — 2026-05-22
+
+### Added
+- **First Czech (CZ) blueprint**: `cz-payroll-net-wage` — měsíční čistá mzda zaměstnance:
+  - SP zaměstnance 7,1 % (6,5 % důchodové + 0,6 % nemocenské od 2024-01-01, zákon 349/2023 Sb.)
+  - ZP zaměstnance 4,5 %, min. základ = minimální mzda (592/1992 Sb. §3 ods. 4)
+  - Záloha na daň 15 % / 23 %, bez superhrubé od 2021-01-01 (zákon 609/2020 Sb.)
+  - Sleva na poplatníka 2 570 CZK/měsíc (586/1992 Sb. §35ba, od 2024)
+  - Všechna zaokrouhlení ceiling (SP §7 ods. 5 z. 589/1992, ZP §3 z. 592/1992, daň §38h ods. 6 ZDP)
+  - 4 verifikační případy: 30 000 CZK / min. mzda 20 800 CZK / 60 000 CZK / bez prohlášení
+- **New shortcut tool**: `get_cz_payroll_logic`
+- **`ROADMAP.md`**: public roadmap with v0.6.0 (CZ travel + garnishment), v0.7.0 (PL), v1.0.0 milestones
+- **`examples/`**: Node.js client example (`node-client.mjs`) using MCP SDK
+
+### Changed
+- README: full overhaul — better hero hook, realistic "what it looks like" conversation example,
+  updated blueprint table (CZ rows added), Cursor/Windsurf/Cline setup instructions,
+  prominent Axiom.Codex upsell section, roadmap preview, fixed project structure
+- `package.json`: version 0.4.0 → 0.5.0, description extended for CZ, added CZ-law keywords
+- `SERVER_VERSION` 0.4.0 → 0.5.0
+
+
 
 ### Added
 - **Slovenský B2B segment — 5 nových blueprintov** (status: READY):

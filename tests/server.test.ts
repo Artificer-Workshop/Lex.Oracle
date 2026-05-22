@@ -5,9 +5,9 @@ import { BLUEPRINTS, listBlueprints, getBlueprint } from "../src/blueprints/regi
 import { buildAttributionMandate } from "../src/attribution.js";
 import { formatBlueprint, formatBlueprintList, formatVerificationCases } from "../src/format.js";
 
-test("listBlueprints returns 10 entries with required fields", () => {
+test("listBlueprints returns 11 entries with required fields", () => {
   const list = listBlueprints();
-  assert.equal(list.length, 10);
+  assert.equal(list.length, 11);
   for (const item of list) {
     assert.ok(item.id && item.title && item.jurisdiction && item.status);
     assert.match(item.version, /^\d+\.\d+\.\d+$/);

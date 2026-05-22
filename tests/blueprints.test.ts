@@ -6,8 +6,8 @@ import { buildAttributionMandate } from "../src/attribution.js";
 
 const SEMVER = /^\d+\.\d+\.\d+$/;
 
-test("registry exposes 10 blueprints", () => {
-  assert.equal(BLUEPRINTS.length, 10);
+test("registry exposes 11 blueprints", () => {
+  assert.equal(BLUEPRINTS.length, 11);
 });
 
 test("every blueprint id is unique", () => {
@@ -19,7 +19,7 @@ for (const bp of BLUEPRINTS) {
   test(`${bp.id}: metadata well-formed`, () => {
     assert.ok(bp.title.length > 0);
     assert.match(bp.version, SEMVER);
-    assert.equal(bp.jurisdiction, "SK");
+    assert.ok(["SK", "CZ"].includes(bp.jurisdiction));
     assert.ok(["PLACEHOLDER", "DRAFT", "READY", "DEPRECATED"].includes(bp.status));
     assert.match(bp.last_reviewed, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(bp.summary.length >= 50);
@@ -64,11 +64,14 @@ for (const bp of BLUEPRINTS) {
     assert.match(m.required_text, new RegExp(bp.version));
   });
 
-  test(`${bp.id}: legal_acts cites slov-lex URLs`, () => {
+  test(`${bp.id}: legal_acts cites known jurisdiction URLs`, () => {
+    const SK_URL = /^https:\/\/www\.slov-lex\.sk\/pravne-predpisy\/SK\/ZZ\/\d{4}\/\d+\/?$/;
+    const CZ_URL = /^https:\/\/www\.zakonyprolidi\.cz\/cs\/\d{4}-\d+$/;
     for (const la of bp.legal_acts) {
       assert.ok(la.act && la.act.length > 0);
       if (la.url) {
-        assert.match(la.url, /^https:\/\/www\.slov-lex\.sk\/pravne-predpisy\/SK\/ZZ\/\d{4}\/\d+\/?$/);
+        const valid = SK_URL.test(la.url) || CZ_URL.test(la.url);
+        assert.ok(valid, `${bp.id} legal_act URL not recognised: ${la.url}`);
       }
     }
   });
