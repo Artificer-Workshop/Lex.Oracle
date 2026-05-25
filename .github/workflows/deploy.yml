@@ -5,13 +5,13 @@ name: Deploy Lex.Oracle to Cloud Run
 # Transport: TRANSPORT=http on port 3000, endpoint /mcp (Streamable HTTP, MCP spec 2025-03-26).
 #
 # Required GitHub secrets:
-#   GCP_WORKLOAD_IDENTITY_PROVIDER  — projects/NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
-#   GCP_SERVICE_ACCOUNT             — deploy-axiomcodex@axiomcodex-prod.iam.gserviceaccount.com
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  — Workload Identity Federation provider resource name
+#   GCP_SERVICE_ACCOUNT             — deployer service account email
 #
 # Required GitHub variables:
-#   GCP_PROJECT_ID   — axiomcodex-prod
-#   GCP_REGION       — europe-west1
-#   GAR_REPOSITORY   — axiomcodex
+#   GCP_PROJECT_ID   — GCP project ID
+#   GCP_REGION       — e.g. europe-west1
+#   GAR_REPOSITORY   — Artifact Registry repository name
 
 on:
   workflow_dispatch:
