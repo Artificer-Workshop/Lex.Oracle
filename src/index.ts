@@ -1,13 +1,21 @@
 #!/usr/bin/env node
 /**
  * Lex.Oracle MCP server entry point.
- * Transport: stdio (JSON-RPC 2.0).
+ * TRANSPORT=stdio (default) — JSON-RPC 2.0 over stdin/stdout, for npx / Claude Desktop.
+ * TRANSPORT=http            — Streamable HTTP on $PORT (default 3000) at /mcp, for Cloud Run / Smithery.
  */
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createServer } from "./server.js";
 
 async function main(): Promise<void> {
+  if (process.env.TRANSPORT === "http") {
+    const { startHttpServer } = await import("./http.js");
+    const port = parseInt(process.env.PORT ?? "3000", 10);
+    await startHttpServer(port);
+    return;
+  }
+
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);

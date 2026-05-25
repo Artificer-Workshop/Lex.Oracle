@@ -1,0 +1,129 @@
+name: Deploy Lex.Oracle to Cloud Run
+
+# Build Docker image → push to GCP Artifact Registry → deploy Cloud Run.
+# Public HTTP MCP server — scale-to-zero, managed TLS, custom domain lex-oracle.artificerworkshop.sk.
+# Transport: TRANSPORT=http on port 3000, endpoint /mcp (Streamable HTTP, MCP spec 2025-03-26).
+#
+# Required GitHub secrets:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  — projects/NUMBER/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+#   GCP_SERVICE_ACCOUNT             — deploy-axiomcodex@axiomcodex-prod.iam.gserviceaccount.com
+#
+# Required GitHub variables:
+#   GCP_PROJECT_ID   — axiomcodex-prod
+#   GCP_REGION       — europe-west1
+#   GAR_REPOSITORY   — axiomcodex
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag (default: sha-<commit>)'
+        required: false
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package*.json'
+      - 'tsconfig.json'
+      - 'Dockerfile'
+
+concurrency:
+  group: lex-oracle-deploy
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  IMAGE_NAME: lex-oracle
+  SERVICE_NAME: lex-oracle
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          [ -z "$TAG" ] && TAG="sha-${GITHUB_SHA:0:8}"
+          REGISTRY="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "full=${REGISTRY}/${{ env.IMAGE_NAME }}:${TAG}" >> $GITHUB_OUTPUT
+          echo "latest=${REGISTRY}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ steps.tag.outputs.full }}
+            ${{ steps.tag.outputs.latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --image "${{ steps.tag.outputs.full }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 256Mi \
+            --cpu 1 \
+            --cpu-boost \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars TRANSPORT=http \
+            --quiet
+
+      - name: Verify deployment
+        run: |
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --format "value(status.url)")
+          echo "Service URL: $URL"
+          for i in $(seq 1 12); do
+            HTTP=$(curl -sf -o /dev/null -w "%{http_code}" "${URL}/health" || echo "000")
+            echo "[$i/12] /health → HTTP $HTTP"
+            [ "$HTTP" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "Health check timed out — check Cloud Run logs."
+          exit 1
