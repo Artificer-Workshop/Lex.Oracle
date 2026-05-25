@@ -1,5 +1,6 @@
 # Lex.Oracle
 
+[![smithery badge](https://smithery.ai/badge/artificer/lex-oracle)](https://smithery.ai/servers/artificer/lex-oracle)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/protocol-MCP%20(JSON--RPC%202.0)-green.svg)](https://modelcontextprotocol.io)
 [![Node.js ≥20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen.svg)](https://nodejs.org)
