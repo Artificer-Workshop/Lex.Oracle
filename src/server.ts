@@ -1,9 +1,9 @@
 /**
  * Lex.Oracle MCP server.
  *
- * Exposes legislative blueprints over the Model Context Protocol (JSON-RPC 2.0
- * over stdio). Every tool response includes an `attribution_mandate` field
- * which the consuming LLM should surface to the end user (see NOTICE).
+ * Exposes legislative blueprints over the Model Context Protocol (JSON-RPC 2.0).
+ * Every tool response includes an `attribution_mandate` field which the consuming
+ * LLM should surface to the end user (see NOTICE).
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -28,6 +28,49 @@ import {
 const SERVER_NAME = "lex-oracle";
 const SERVER_VERSION = "0.5.0";
 
+// ---------------------------------------------------------------------------
+// Shared schema + annotation constants
+// ---------------------------------------------------------------------------
+
+const READ_ONLY = {
+  readOnlyHint: true,
+  idempotentHint: true,
+  openWorldHint: false,
+};
+
+const BLUEPRINT_OUTPUT_SCHEMA = {
+  type: "object" as const,
+  properties: {
+    blueprint: {
+      type: "object" as const,
+      description:
+        "Complete blueprint: axiomatic_core (rate constants + citations), " +
+        "execution_order (numbered steps), logic_flow (pseudocode + edge cases), " +
+        "semantic_mapping (step → legal citation), verification_cases, legal_acts.",
+    },
+    presentation: {
+      type: "string" as const,
+      description: "Markdown-formatted blueprint ready for LLM consumption.",
+    },
+    attribution_mandate: {
+      type: "string" as const,
+      description: "Required Apache 2.0 attribution text to surface to end users.",
+    },
+  },
+  required: ["blueprint", "presentation", "attribution_mandate"],
+};
+
+const BLUEPRINT_ID_PARAM = {
+  type: "string" as const,
+  description:
+    "Blueprint identifier, e.g. 'sk-garnishment-thirds', " +
+    "'sk-payroll-net-wage', 'sk-travel-domestic'.",
+};
+
+// ---------------------------------------------------------------------------
+// Server factory
+// ---------------------------------------------------------------------------
+
 export function createServer(): Server {
   const server = new Server(
     { name: SERVER_NAME, version: SERVER_VERSION },
@@ -36,8 +79,10 @@ export function createServer(): Server {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [
+      // ── list_blueprints ────────────────────────────────────────────────
       {
         name: "list_blueprints",
+        title: "List Blueprints",
         description:
           "List all blueprints available in Lex.Oracle. " +
           "Each entry contains: id, title, jurisdiction, status, version, summary.",
@@ -46,9 +91,38 @@ export function createServer(): Server {
           properties: {},
           additionalProperties: false,
         },
+        outputSchema: {
+          type: "object" as const,
+          properties: {
+            blueprints: {
+              type: "array" as const,
+              items: {
+                type: "object" as const,
+                properties: {
+                  id: { type: "string" as const },
+                  title: { type: "string" as const },
+                  jurisdiction: { type: "string" as const },
+                  status: { type: "string" as const },
+                  version: { type: "string" as const },
+                  summary: { type: "string" as const },
+                },
+                required: ["id", "title", "jurisdiction", "status", "version", "summary"],
+              },
+            },
+            presentation: {
+              type: "string" as const,
+              description: "Markdown-formatted blueprint list.",
+            },
+          },
+          required: ["blueprints", "presentation"],
+        },
+        annotations: READ_ONLY,
       },
+
+      // ── get_blueprint ──────────────────────────────────────────────────
       {
         name: "get_blueprint",
+        title: "Get Blueprint",
         description:
           "Retrieve a complete legislative blueprint by blueprint_id. " +
           "The blueprint contains: axiomatic_core (rate constants with effective dates), " +
@@ -59,19 +133,19 @@ export function createServer(): Server {
         inputSchema: {
           type: "object",
           properties: {
-            blueprint_id: {
-              type: "string",
-              description:
-                "Blueprint identifier, e.g. 'sk-garnishment-thirds', " +
-                "'sk-payroll-net-wage', 'sk-travel-domestic'.",
-            },
+            blueprint_id: BLUEPRINT_ID_PARAM,
           },
           required: ["blueprint_id"],
           additionalProperties: false,
         },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_garnishment_logic ──────────────────────────────────────────
       {
         name: "get_garnishment_logic",
+        title: "Slovak Salary Garnishment",
         description:
           "Retrieve the complete blueprint for Slovak salary garnishment — " +
           "the thirds system (NV 268/2006 + Execution Code 233/1995 §70–§72). " +
@@ -83,9 +157,14 @@ export function createServer(): Server {
           properties: {},
           additionalProperties: false,
         },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_travel_logic ───────────────────────────────────────────────
       {
         name: "get_travel_logic",
+        title: "Slovak Domestic Travel Allowances",
         description:
           "Retrieve the complete blueprint for Slovak domestic travel allowances — " +
           "Act 283/2002 (meal allowances §5, vehicle km reimbursement §7, " +
@@ -98,9 +177,14 @@ export function createServer(): Server {
           properties: {},
           additionalProperties: false,
         },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_annual_tax_reconciliation_logic ────────────────────────────
       {
         name: "get_annual_tax_reconciliation_logic",
+        title: "Slovak Annual Tax Reconciliation",
         description:
           "Retrieve the complete blueprint for Slovak annual tax reconciliation — " +
           "§38 Zákon 595/2003 Z.z. (ročné zúčtovanie preddavkov na daň zo závislej činnosti). " +
@@ -112,9 +196,14 @@ export function createServer(): Server {
           properties: {},
           additionalProperties: false,
         },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_szco_annual_settlement_logic ───────────────────────────────
       {
         name: "get_szco_annual_settlement_logic",
+        title: "Slovak SZČO Annual Insurance Settlement",
         description:
           "Retrieve the complete blueprint for Slovak SZČO annual insurance settlement — " +
           "461/2003 Z.z. §138 ods. 2 (SP) + 580/2004 Z.z. §13 ods. 2 + §19 (ZP). " +
@@ -128,9 +217,14 @@ export function createServer(): Server {
           properties: {},
           additionalProperties: false,
         },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_b2b_dph_logic ──────────────────────────────────────────────
       {
         name: "get_b2b_dph_logic",
+        title: "Slovak VAT (DPH)",
         description:
           "Retrieve the complete blueprint for Slovak VAT (DPH) — Zákon 222/2004 Z. z. " +
           "Covers: §27 sadzby (zákl. 23 %, stredná 19 %, znížená 5 %, nulová 0 % od 2025-01-01), " +
@@ -138,9 +232,14 @@ export function createServer(): Server {
           "reverse-charge §69, EU intra-community §43/§11. " +
           "Shortcut for get_blueprint(blueprint_id='sk-b2b-dph').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_b2b_dppo_logic ─────────────────────────────────────────────
       {
         name: "get_b2b_dppo_logic",
+        title: "Slovak Corporate Income Tax (DPPO)",
         description:
           "Retrieve the complete blueprint for Slovak corporate income tax (DPPO) — " +
           "Zákon 595/2003 Z. z. §15 v znení od 2025-01-01 (novela 278/2024). " +
@@ -148,9 +247,14 @@ export function createServer(): Server {
           "základ dane §17, umorenie straty §30 (max 50 % ZD, 5 rokov), preddavky §42. " +
           "Shortcut for get_blueprint(blueprint_id='sk-b2b-dppo').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_b2b_odpisy_logic ───────────────────────────────────────────
       {
         name: "get_b2b_odpisy_logic",
+        title: "Slovak Tax Depreciation",
         description:
           "Retrieve the complete blueprint for Slovak tax depreciation — " +
           "Zákon 595/2003 Z. z. §22-§28. Covers: 7 odpisových skupín (2/4/6/8/12/20/40 rokov), " +
@@ -158,9 +262,14 @@ export function createServer(): Server {
           "(koeficienty 6/7 a 8/9), nehmotný majetok §22 ods. 8 (max 5 rokov lineárne). " +
           "Shortcut for get_blueprint(blueprint_id='sk-b2b-odpisy').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_b2b_rz_zp_logic ────────────────────────────────────────────
       {
         name: "get_b2b_rz_zp_logic",
+        title: "Slovak Annual Health Insurance Settlement (RZ ZP)",
         description:
           "Retrieve the complete blueprint for Slovak annual health-insurance settlement (RZ ZP) — " +
           "Zákon 580/2004 Z. z. §19. Covers: agregácia VZ (zamestnanec, SZČO, dividendy, iné), " +
@@ -168,18 +277,28 @@ export function createServer(): Server {
           "dividendy §10b 14 % nemenné, ZŤP koef. 0.5, rozdiel preplatok/nedoplatok, hranica 1 EUR §19 ods. 6. " +
           "Shortcut for get_blueprint(blueprint_id='sk-b2b-rz-zp').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_b2b_zrazkova_dan_logic ─────────────────────────────────────
       {
         name: "get_b2b_zrazkova_dan_logic",
+        title: "Slovak Withholding Tax",
         description:
           "Retrieve the complete blueprint for Slovak withholding tax — Zákon 595/2003 Z. z. §43. " +
           "Covers: štandard 19 % (úroky, licenčné, dividendy PO), dividendy FO 7 % od 2017, " +
           "override 35 % pre nespolupracujúce štáty §43 ods. 2, splatnosť 15. deň nasl. mesiaca §43 ods. 11. " +
           "Shortcut for get_blueprint(blueprint_id='sk-b2b-zrazkova-dan').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_cz_payroll_logic ───────────────────────────────────────────
       {
         name: "get_cz_payroll_logic",
+        title: "Czech Net Wage Calculation",
         description:
           "Retrieve the complete blueprint for Czech net wage calculation — " +
           "Zákon 589/1992 Sb. (SP 7.1% = 6.5% důchodové + 0.6% nemocenské od 2024-01-01) + " +
@@ -189,9 +308,14 @@ export function createServer(): Server {
           "4 verifikační případy: standard 30 000 / min. mzda / vyšší příjem / bez prohlášení. " +
           "Shortcut for get_blueprint(blueprint_id='cz-payroll-net-wage').",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        outputSchema: BLUEPRINT_OUTPUT_SCHEMA,
+        annotations: READ_ONLY,
       },
+
+      // ── get_test_cases ─────────────────────────────────────────────────
       {
         name: "get_test_cases",
+        title: "Get Verification Test Cases",
         description:
           "Retrieve verification_cases for a given blueprint_id. " +
           "Each case contains: input, expected_output, and legal_reasoning. " +
@@ -199,14 +323,45 @@ export function createServer(): Server {
         inputSchema: {
           type: "object",
           properties: {
-            blueprint_id: { type: "string" },
+            blueprint_id: {
+              type: "string",
+              description:
+                "Blueprint identifier to retrieve test cases for, " +
+                "e.g. 'sk-garnishment-thirds', 'sk-payroll-net-wage'.",
+            },
           },
           required: ["blueprint_id"],
           additionalProperties: false,
         },
+        outputSchema: {
+          type: "object" as const,
+          properties: {
+            blueprint_id: { type: "string" as const },
+            version: { type: "string" as const },
+            verification_cases: {
+              type: "array" as const,
+              items: {
+                type: "object" as const,
+                properties: {
+                  input: { type: "object" as const, description: "Test input values." },
+                  expected_output: { type: "object" as const, description: "Expected computation result." },
+                  legal_reasoning: { type: "string" as const, description: "Citation-backed rationale." },
+                },
+                required: ["input", "expected_output", "legal_reasoning"],
+              },
+            },
+            presentation: { type: "string" as const },
+            attribution_mandate: { type: "string" as const },
+          },
+          required: ["blueprint_id", "version", "verification_cases", "presentation", "attribution_mandate"],
+        },
+        annotations: READ_ONLY,
       },
+
+      // ── get_attribution_mandate ────────────────────────────────────────
       {
         name: "get_attribution_mandate",
+        title: "Get Attribution Mandate",
         description:
           "Retrieve the required attribution text for a given blueprint_id. " +
           "When blueprint content is used to generate code or an answer for an end user, " +
@@ -214,11 +369,27 @@ export function createServer(): Server {
         inputSchema: {
           type: "object",
           properties: {
-            blueprint_id: { type: "string" },
+            blueprint_id: {
+              type: "string",
+              description:
+                "Blueprint identifier to retrieve attribution text for, " +
+                "e.g. 'sk-garnishment-thirds', 'sk-payroll-net-wage'.",
+            },
           },
           required: ["blueprint_id"],
           additionalProperties: false,
         },
+        outputSchema: {
+          type: "object" as const,
+          properties: {
+            attribution_mandate: {
+              type: "string" as const,
+              description: "Required Apache 2.0 attribution text to surface to end users.",
+            },
+          },
+          required: ["attribution_mandate"],
+        },
+        annotations: READ_ONLY,
       },
     ],
   }));
@@ -355,8 +526,8 @@ export function createServer(): Server {
           isError: true,
           content: [
             {
-              type: "text",
-              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_annual_tax_reconciliation_logic, get_szco_annual_settlement_logic, get_b2b_dph_logic, get_b2b_dppo_logic, get_b2b_odpisy_logic, get_b2b_rz_zp_logic, get_b2b_zrazkova_dan_logic, get_test_cases, get_attribution_mandate.`,
+              type: "text" as const,
+              text: `Unknown tool: ${name}. Available tools: list_blueprints, get_blueprint, get_garnishment_logic, get_travel_logic, get_annual_tax_reconciliation_logic, get_szco_annual_settlement_logic, get_b2b_dph_logic, get_b2b_dppo_logic, get_b2b_odpisy_logic, get_b2b_rz_zp_logic, get_b2b_zrazkova_dan_logic, get_cz_payroll_logic, get_test_cases, get_attribution_mandate.`,
             },
           ],
         };
@@ -366,7 +537,7 @@ export function createServer(): Server {
   return server;
 }
 
-function ok(payload: unknown) {
+function ok(payload: Record<string, unknown>) {
   return {
     content: [
       {
@@ -374,6 +545,7 @@ function ok(payload: unknown) {
         text: JSON.stringify(payload, null, 2),
       },
     ],
+    structuredContent: payload,
   };
 }
 
