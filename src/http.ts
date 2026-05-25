@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "./server.js";
+import { renderLanding } from "./landing.js";
 
 const VERSION = "0.5.0";
 
@@ -31,6 +32,12 @@ export async function startHttpServer(port: number): Promise<void> {
 
   app.get("/health", (_req: Request, res: Response): void => {
     res.json({ status: "ok", service: "lex-oracle", version: VERSION });
+  });
+
+  app.get("/", (req: Request, res: Response): void => {
+    const lang = req.query["lang"] === "sk" ? "sk" : "en";
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(renderLanding(lang));
   });
 
   await new Promise<void>((resolve) => {
